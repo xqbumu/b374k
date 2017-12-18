@@ -1,0 +1,29 @@
+*{
+	font-family:'';
+}
+
+a.navbar:hover{
+	text-decoration: underline;
+}
+
+.nav-cwd{
+	color:#ffffff;
+}
+
+table.box-database td, table.box-database th{
+	padding:4px;
+}
+
+#dbBottom table td, #dbBottom table th{
+	padding:4px;
+}
+
+#dbBottom p.boxtitle{
+	padding:4px 16px;
+	margin-bottom:2px;
+}
+
+#dbBottom table.tbl-list{
+	display:none;
+	margin:4px 0;
+}

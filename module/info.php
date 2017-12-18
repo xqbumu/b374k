@@ -52,7 +52,7 @@ if(!function_exists('info_getinfo')){
 			"/etc/lighttpd/lighttpd.conf", "/etc/nginx/nginx.conf",
 			"/etc/fstab", "/etc/mtab", "/etc/crontab", "/etc/inittab", "/etc/modules.conf", "/etc/modules");
 			foreach($interesting as $f){
-				if(@is_file($f) && @is_readable($f)) $res .= "<tr><td>".$f."</td><td><a data-path='".html_safe($f)."' onclick='view_entry(this);'>".$f." is readable</a></td></tr>";
+				if(@is_file($f) && @is_readable($f)) $res .= "<tr><td>".$f."</td><td><a data-path='".urlencode(html_safe($f))."' onclick='view_entry(this);'>".$f." is readable</a></td></tr>";
 			}
 		}
 		$res .= "</table></div>";

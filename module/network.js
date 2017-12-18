@@ -51,7 +51,7 @@ function rs_go(rsType){
 	if(rsArgs!=''){
 		send_post({ rsLang:rsLang, rsArgs:rsArgs },
 			function(res){
-				if(res!='error'){
+				if(res.indexOf('error') != 0){
 					splits = res.split('{[|b374k|]}');
 					if(splits.length==2){
 						output = splits[0]+"<hr>"+splits[1];

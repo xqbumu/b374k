@@ -241,7 +241,11 @@ function start_scroll(str){
 }
 
 function get_cwd(){
-	return decodeURIComponent(get_cookie('cwd'));
+	decodeStr = decodeURIComponent(get_cookie('cwd'));
+	send_post({converString:decodeStr}, function(res){
+		decodeStr = decodeURIComponent(res);
+	}, null, {async: false});
+	return decodeStr;
 }
 
 function fix_tabchar(el, e){
@@ -282,18 +286,20 @@ function time(){
 	return d.getTime();
 }
 
-function send_post(targetdata, callback, loading){
+function send_post(targetdata, callback, loading, options){
 	if(loading==null) loading_start();
-	$.ajax({
+	if(options==null) options={};
+	$.ajax($.extend({
 		url: targeturl,
 		type: 'POST',
 		data: targetdata,
+		options: options,
 		success: function(res){
 			callback(res);
 			if(loading==null) loading_stop();
 		},
 		error: function(){ if(loading==null) loading_stop(); }
-	});
+	}, options));
 }
 
 function loading_start(){

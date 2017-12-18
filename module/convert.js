@@ -10,7 +10,7 @@ Zepto(function($){
 function decode_go(){
 	decodeStr = $('#decodeStr').val();
 	send_post({decodeStr:decodeStr}, function(res){
-		if(res!='error'){
+		if(res.indexOf('error') != 0){
 			$('#decodeResult').html('');
 			$('#decodeResult').html(res);
 		}

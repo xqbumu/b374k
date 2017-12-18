@@ -4,7 +4,7 @@ Zepto(function($){
 
 function show_processes(){
 	send_post({showProcesses:''}, function(res){
-		if(res!='error'){
+		if(res.indexOf('error') != 0){
 			$('#processes').html(res);
 			sorttable.k($('#psTable').get(0));
 			ps_bind();
@@ -53,7 +53,7 @@ function kill_pid_go(){
 	allPid = $('.allPid').val();
 	if($.trim(allPid)!=''){
 		send_post({allPid:allPid}, function(res){
-			if(res!='error'){
+			if(res.indexOf('error') != 0){
 				$('.boxresult').html(res + ' process(es) killed');
 			}
 			else $('.boxresult').html('Unable to kill process(es)');

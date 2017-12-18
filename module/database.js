@@ -6,6 +6,17 @@ Zepto(function($){
 var dbSupported = "";
 var dbPageLimit = 50;
 
+function db_conn_info() {
+	dbType = $('#dbType').val();
+	dbHost = $('#dbHost').val();
+	dbUser = $('#dbUser').val();
+	dbPass = $('#dbPass').val();
+	dbPort = $('#dbPort').val();
+	dbCountRows = $('#dbCountRows')[0].checked;
+
+	return {dbType:dbType, dbHost:dbHost, dbUser:dbUser, dbPass:dbPass, dbPort:dbPort, dbCountRows:dbCountRows};
+}
+
 function db_init(){
 	if((dbSupported = localStorage.getItem('db_supported'))){
 		db_bind();
@@ -91,50 +102,42 @@ function db_nav_bind(){
 }
 
 function db_connect(){
-	dbType = $('#dbType').val();
-	dbHost = $('#dbHost').val();
-	dbUser = $('#dbUser').val();
-	dbPass = $('#dbPass').val();
-	dbPort = $('#dbPort').val();
-	send_post({dbType:dbType, dbHost:dbHost, dbUser:dbUser, dbPass:dbPass, dbPort:dbPort}, function(res){
-		if(res!='error'){
-			$('#dbNav').html(res);
-			$('.dbHostRow').hide();
-			$('.dbUserRow').hide();
-			$('.dbPassRow').hide();
-			$('.dbPortRow').hide();
-			$('.dbConnectRow').hide();
+	send_post(db_conn_info(), function(res){
+		if(res.indexOf('error') != 0){
+			splits = res.split('{[|b374k|]}');
+			if(splits.length==2){
+				$('#dbExportList').html(splits[0]);
+				$('#dbNav').html(splits[1]);
+			} else {
+				$('#dbNav').html(res);
+			}
+			$('.box-database').hide();
+			$('.dbError').html('')
 			$('.dbQueryRow').show();
 			$('#dbBottom').show();
+			$('#dbExport').show();
 			db_nav_bind();
-		}
-		else $('.dbError').html('Unable to connect');
+		} else $('.dbError').html('Unable to connect: '+res);
 	});
 }
 
 function db_disconnect(){
-	$('.dbHostRow').show();
-	$('.dbUserRow').show();
-	$('.dbPassRow').show();
-	$('.dbPortRow').show();
-	$('.dbConnectRow').show();
+	$('.box-database').show();
 	$('.dbQueryRow').hide();
 	$('#dbNav').html('');
 	$('#dbResult').html('');
+	$('#dbExport').hide();
 	$('#dbBottom').hide();
 }
 
 function db_run(){
-	dbType = $('#dbType').val();
-	dbHost = $('#dbHost').val();
-	dbUser = $('#dbUser').val();
-	dbPass = $('#dbPass').val();
-	dbPort = $('#dbPort').val();
+	dbConnInfo = db_conn_info();
 	dbQuery = $('#dbQuery').val();
 
 	if((dbQuery!='')&&(dbQuery!='You can also press ctrl+enter to submit')){
-		send_post({dbType:dbType, dbHost:dbHost, dbUser:dbUser, dbPass:dbPass, dbPort:dbPort, dbQuery:dbQuery}, function(res){
-			if(res!='error'){
+		dbConnInfo.dbQuery = dbQuery;
+		send_post(dbConnInfo, function(res){
+			if(res.indexOf('error') != 0){
 				$('#dbResult').html(res);
 				$('.tblResult').each(function(){
 					sorttable.k(this);
@@ -145,14 +148,10 @@ function db_run(){
 }
 
 function db_query_tbl(type, db, table, start, limit){
-	dbType = $('#dbType').val();
-	dbHost = $('#dbHost').val();
-	dbUser = $('#dbUser').val();
-	dbPass = $('#dbPass').val();
-	dbPort = $('#dbPort').val();
+	dbConnInfo = $.extend(db_conn_info(), {dbQuery:'', dbDB:db, dbTable:table, dbStart:start, dbLimit:limit});
 
-	send_post({dbType:dbType, dbHost:dbHost, dbUser:dbUser, dbPass:dbPass, dbPort:dbPort, dbQuery:'', dbDB:db, dbTable:table, dbStart:start, dbLimit:limit}, function(res){
-		if(res!='error'){
+	send_post(dbConnInfo, function(res){
+		if(res.indexOf('error') != 0){
 			$('#dbResult').html(res);
 			$('.tblResult').each(function(){
 				sorttable.k(this);
@@ -176,4 +175,27 @@ function db_pagination(type){
 		if(start<0) start = 0;
 	}
 	db_query_tbl(dbType, db, table, start, limit);
+}
+
+function db_dump_select_batch(op){
+	$('td#dbExportList input[type=checkbox]').each(function(){
+		$(this)[0].checked = op;
+	});
+}
+
+function db_dump_do(){
+	var dbs = [];
+	$('td#dbExportList input[type=checkbox]').each(function(){
+		if($(this)[0].checked) {
+			dbs.push($(this).val());
+		}
+	});
+	dbConnInfo = db_conn_info();
+	dbConnInfo['dbDump'] = dbs.join(',');
+	for (var key in dbConnInfo) { 
+		$('#form').append("<input type='hidden' name='"+key+"' value='"+dbConnInfo[key]+"'>");
+	}
+	$('#form').submit();
+	$('#form').html('');
+	hide_box();
 }

