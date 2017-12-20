@@ -28,6 +28,37 @@ if (!class_exists('ScannerClass')) {
 			),
 		);
 
+		public static $whitelist = array(
+			'libs\ci\database\drivers\sqlite\sqlite_driver.php' => array(
+				'rules' => array('popen\(.+\)'),
+				'md5s' => array('b8485839a116df67cf8a51b9d7dd4212'),
+			),
+			'libs\libraries\Sms.php' => array(
+				'rules' => array('t.cn', '0155'),
+				'md5s' => array('6139119cc461e66815f29d85d0f3671b', 'd82bb89e3beb33e008ee0a3721d94ccb'),
+			),
+			'libs\ci\libraries\Email.php' => array(
+				'rules' => array('popen\(.+\)'),
+				'md5s' => array('3148a9cdcdd674e0e46d22941ffeb11f'),
+			),
+			'libs\ci\libraries\Image_lib.php' => array(
+				'rules' => array('escapeshellarg'),
+				'md5s' => array('9ce24c091cad13a9df60e3c85e828bf8'),
+			),
+			'libs\ci\libraries\Upload.php' => array(
+				'rules' => array('function\_exists\s*\(\s*[\'|\"](popen|exec|proc\_open|system|passthru)+[\'|\"]\s*\)', 'popen\(.+\)', 'shell_exec(', 'escapeshellarg'),
+				'md5s' => array('75b02a834a4cc6b14d252e7442ad3a0e', '9d06f2fb016ef94357b7b1f37fb5f1f2'),
+			),
+			'libs\ci\libraries\Xmlrpc.php' => array(
+				'rules' => array('eval\((\'|"|\s*)\\$'),
+				'md5s' => array('8b308c187c3d579a90874b1d6a15dd5c', '767c271eafcddcea393f081a08a0d115'),
+			),
+			'config\user_agents.php' => array(
+				'rules' => array('alexa'),
+				'md5s' => array('35c19f0eb9f22b91acaef8e5cc9b8ee1'),
+			),
+		);
+
 		public static $rules = array(
 			'php' => array(
 				'一句话后门特征' => array(
@@ -59,7 +90,7 @@ if (!class_exists('ScannerClass')) {
 					array('regexp', '[^\W|^(strr)]chr\('),
 					array('regexp', '\)\.@\$_\(\$_GET\['),
 					// 'curl_exec',
-					array('regexp', 'if \(\!defined\("'),
+					// array('regexp', 'if \(\!defined\("'),
 					array('regexp', 'if\(\\$_GET\[\{'),
 					array('regexp', '"Access"\);'),
 					array('regexp', '\],\\$_FILES\['),
@@ -72,8 +103,6 @@ if (!class_exists('ScannerClass')) {
 					array('regexp', '\)\.@\$_\(\$_POST\['),
 					// 'chmod\(',
 					array('regexp', '\]\(\$_REQUEST\['),
-					array('regexp', 'php\:\/\/input'),
-					array('regexp', 'popen\(.+\)'),
 					// 'system',
 					// 'str_replace\(',
 					// ' str_replace',
@@ -251,13 +280,15 @@ if (!class_exists('ScannerClass')) {
 					array('regexp', '\)\)\)\;return\;\?', '威盾加密'),
 					array('regexp', 'eval\((\'|"|\s*)\\$', 'eval($'),
 					array('regexp', 'assert\((\'|"|\s*)\\$', 'assert($'),
+					array('regexp', 'popen\(.+\)'),
 					array('string', 'shell_exec('),
-					array('string', 'exec('),
+					// array('string', 'exec('),
 					array('string', 'proc_open'),
 					array('string', 'escapeshellarg'),
 					array('string', 'system('),
 					array('string', '替换内容'),
 					array('string', 'phpinfo();'),
+					// array('string', 'php://input'),
 				),
 				'加密后门特征' => array(
 					array('regexp', 'eval\(gzinflate\('),
@@ -267,8 +298,8 @@ if (!class_exists('ScannerClass')) {
 					array('regexp', 'eval\(str_rot13\('),
 					array('regexp', 'gzuncompress\(base64_decode\('),
 					array('regexp', 'base64_decode\(gzuncompress\('),
-					array('regexp', 'base64_decode\(([^\]]{0,256})\$_(POST|GET|REQUEST|COOKIE)\[([^\]]+)\]'),
-					array('regexp', 'base64_decode\(([^\]]+)\$_(POST|GET|REQUEST|COOKIE)\[([^\]]+)\]'),
+					array('regexp', 'base64_decode\(([^\]]{0,256})\\$_(POST|GET|REQUEST|COOKIE)\[([^\]]+)\]'),
+					array('regexp', 'base64_decode\(([^\]]+)\\$_(POST|GET|REQUEST|COOKIE)\[([^\]]+)\]'),
 				),
 				'危险MYSQL代码' => array(
 					array('string', 'returnsstringsoname'),
@@ -331,40 +362,80 @@ if (!class_exists('ScannerClass')) {
 			return $type_info;
 		}
 
+		function get_file_whitelist_info($file) {
+			$file_md5 = '';
+			foreach (self::$whitelist as $wl_key => $wl_value) {
+				if (strpos($file, $wl_key) !== false) {
+					if ($file_md5 == '') {
+						$file_md5 = md5_file($file);
+					}
+					if (in_array($file_md5, $wl_value['md5s'])) {
+						return $wl_value;
+					}
+				}
+			}
+			return false;
+		}
+
 		function check_file($file, $type_info) {
 			$res = array();
 			$file_size = FileManagerClass::size($file);
+			// white list check
+			$file_whitelist_info = $this->get_file_whitelist_info($file);
 			if ($file_size <= pow(2, 22)) {
-				// 4M
+				// 4M limit
 				$file_content = FileManagerClass::get($file);
 				$file_content_lower = strtolower(FileManagerClass::get($file));
 				if (is_array($type_info) && isset($type_info['rules']) && sizeof($type_info['rules']) > 0) {
 					foreach ($type_info['rules'] as $rule_level_0 => $value_level_0) {
 						foreach ($value_level_0 as $rule_level_1 => $value_level_1) {
 							foreach ($value_level_1 as $rule_info) {
+								// $rule_whitelist = false;
+								// gen rule name
 								$rule_name_arr = array($rule_level_0, $rule_level_1);
 								if (sizeof($rule_info) >= 3) {
-									array_push($rule_name_arr, $rule_info[2]);
+									if (is_string($rule_info[2])) {
+										array_push($rule_name_arr, $rule_info[2]);
+										// } elseif (is_array($rule_info[2]) && isset($rule_info[2]['name'])){
+										// 	array_push($rule_name_arr, $rule_info[2]['name']);
+										// 	if (isset($rule_info[2]['whitelist']) && is_array($rule_info[2]['whitelist']) && sizeof($rule_info[2]['whitelist']) > 0) {
+										// 		$rule_whitelist = $rule_info[2]['whitelist'];
+										// 	}
+									} else {
+										array_push($rule_name_arr, $rule_info[1]);
+									}
 								} elseif (sizeof($rule_info) == 2) {
 									array_push($rule_name_arr, $rule_info[1]);
 								}
+								// white list check
+								if ($file_whitelist_info && in_array($rule_info[1], $file_whitelist_info['rules'])) {
+									continue;
+								}
 								$rule_name = implode('->', $rule_name_arr);
 								$rule_name = convert_string_to_sys($rule_name);
-								if (sizeof($res) <= 3) {
+								// run filter
+								$hit = false;
+								if (sizeof($res) < 3) {
 									switch ($rule_info[0]) {
 									case 'regexp':
 										$pos = preg_match("/$rule_info[1]/i", $file_content);
 										if ($pos) {
-											array_push($res, $rule_name);
+											$hit = true;
 										}
 										break;
 									case 'string':
 									default:
 										if (strpos($file_content_lower, strtolower($rule_info[1])) !== false) {
-											array_push($res, $rule_name);
+											$hit = true;
 										}
 										break;
 									}
+
+									if ($hit) {
+										array_push($res, $rule_name);
+									}
+								} else {
+									return $res;
 								}
 							}
 						}
@@ -393,9 +464,12 @@ if (!class_exists('ScannerClass')) {
 			$res = array();
 			if (is_array($files) && sizeof($files) > 0) {
 				foreach ($files as $index => $item) {
+					$item_start_time = microtime();
 					$check_res = $this->check_file($item, $type_info);
+					$item_end_time = microtime();
 					if (sizeof($check_res) > 0) {
-						$res[$item]['errors'] = $check_res;
+						$res[$item]['extra_info']['scantime'] = $item_end_time - $item_start_time;
+						$res[$item]['extra_info']['errors'] = $check_res;
 					}
 				}
 			}
@@ -435,7 +509,7 @@ if (isset($p['scannerGetTypeSupported'])) {
 	foreach (ScannerClass::$types as $key => $value) {
 		array_push($types, $key);
 	}
-	output(implode('{[|b374k|]}', $types), 'utf-8');
+	output(implode(',', $types), 'utf-8');
 } elseif (isset($p['scannerPath'])) {
 	$sc = new ScannerClass();
 	$fmc = new FileManagerClass();
@@ -449,12 +523,23 @@ if (isset($p['scannerGetTypeSupported'])) {
 	}
 
 	$candidate = $fmc->get_all_files($scannerPath);
+	$dir_info = array();
 	$meta_files = array_filter($candidate, "is_file");
 	$meta_dirs = array_filter($candidate, "is_dir");
-	$candidate = $sc->filter_files_rule($meta_files, $scannerTypeInfo);
+	$scan_start_time = time();
+	$dir_info['targetFiles'] = $sc->filter_files_rule($meta_files, $scannerTypeInfo);
+	$scan_end_time = time();
+	$dir_info['extra_info'] = array('errors', 'scantime');
+	$dir_info['counter'] = array(
+		'Files' => sizeof($meta_files),
+		'Folders' => sizeof($meta_dirs),
+		'Scan Time' => $scan_end_time - $scan_start_time,
+		'Scan Files' => sizeof($sc->filter_files_type($meta_files, $scannerTypeInfo)),
+		'Hit Files' => sizeof($dir_info['targetFiles']),
+	);
 
-	if (sizeof($candidate) > 0) {
-		$res = $fmc->explor_files($candidate);
+	if (sizeof($dir_info['targetFiles']) > 0) {
+		$res = $fmc->explor_files($dir_info);
 	} else {
 		$res = "";
 	}

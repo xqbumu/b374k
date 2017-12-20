@@ -28,6 +28,8 @@ if (!class_exists('FileManagerClass')) {
 				}
 			}
 
+
+
 			array_unshift($allfolders, ".");
 			$cur = getcwd();
 			chdir("..");
@@ -64,8 +66,10 @@ if (!class_exists('FileManagerClass')) {
 			return array(
 				'allfolders' => $allfoldersRes,
 				'allfiles' => $allfilesRes,
-				'totalFiles' => $totalFiles,
-				'totalFolders' => $totalFolders,
+				'counter' => array(
+					'Files' => $totalFiles,
+					'Folders' => $totalFolders,
+				),
 				'extraCols' => array_keys($cols),
 			);
 		}
@@ -88,18 +92,16 @@ if (!class_exists('FileManagerClass')) {
 			return $files;
 		}
 
-		function explor_files($path) {
-			$files = array();
-			if (is_string($path) && sizeof($path) > 0) {
-				$files = self::get_all_files($path);
-				$files = $files['allfiles'];
+		function explor_files($dir_info) {
+			if (is_string($dir_info) && sizeof($dir_info) > 0) {
+				$dir_info = self::get_all_files($dir_info);
 			} else {
-				$files = $path;
-				foreach ($files as $k => $v) {
-					$files[$k] = array_merge($files[$k], self::get_file_info($k));
+				foreach ($dir_info['targetFiles'] as $tf_k => $tf_v) {
+					$dir_info['targetFiles'][$tf_k] = array_merge($dir_info['targetFiles'][$tf_k], self::get_file_info($tf_k));
 				}
 			}
-			if (!is_array($files)) {
+
+			if (!isset($dir_info['targetFiles']) || !is_array($dir_info['targetFiles'])) {
 				return 'error in explor_files';
 			}
 
@@ -108,39 +110,64 @@ if (!class_exists('FileManagerClass')) {
 			$output .= "<tr>
 			<th class='col-cbox sorttable_nosort'><div class='cBoxAll'></div></th>
 			<th class='col-name'>name</th>
-			<th class='col-size'>size</th>
-			<th class='col-errors'>errors</th>";
-
-			foreach (self::get_cols_info() as $k => $v) {
-				$output .= "<th class='col-" . $k . "'>" . $k . "</th>";
-			}
-			$output .= "</tr></thead><tbody>";
-			foreach ($files as $file => $info) {
-				$errors_info = array();
-				if (isset($info['errors']) && sizeof($info['errors']) > 0) {
-					foreach ($info['errors'] as $key => $value) {
-						array_push($errors_info, html_safe(stripslashes($value)));
-					}
+			<th class='col-size'>size</th>";
+			if (isset($dir_info['extra_info']) && is_array($dir_info['extra_info'])) {
+				foreach ($dir_info['extra_info'] as $extra_info_key => $extra_info_value) {
+					$output .= "<th class='col-$extra_info_value'>$extra_info_value</th>";
 				}
+			}
+
+			foreach (self::get_cols_info() as $cols_key => $cols_value) {
+				$output .= "<th class='col-" . $cols_key . "'>" . $cols_key . "</th>";
+			}
+
+			$output .= "</tr></thead><tbody>";
+
+			foreach ($dir_info['targetFiles'] as $file => $info) {
+				if (isset($info['extra_info']) && isset($info['extra_info']['errors']) && sizeof($info['extra_info']['errors']) > 0) {
+					$errors_info = array();
+					foreach ($info['extra_info']['errors'] as $key => $value) {
+						array_push($errors_info, html_safe(stripslashes(str_replace('\s*', '', $value))));
+					}
+					$info['extra_info']['errors'] = implode('<br />', $errors_info);
+				}
+
 				$output .= "
 		<tr data-path=\"" . html_safe($file) . "\">
 		<td><div class='cBox'></div></td>
 		<td class='explorer-row' style='white-space:normal;'>
-			<a data-path='" . html_safe($file) . "' onclick='view_entry(this);'>" . html_safe($info['name']) . "</a>
+			<a data-path='" . html_safe($file) . "' data-errors='" . (isset($info['extra_info']['errors'])?$info['extra_info']['errors']:'') . "' onclick='view_entry(this);'>" . html_safe($info['name']) . "</a>
 			<span class='action floatRight'>Action</span>
 		</td>
-		<td title='" . $info['filesize'] . "'>" . $info['filesize_human'] . "</td>
-		<td class='explorer-row scanner-item-errors'>" . implode('<br />', $errors_info) . "</td>";
-				foreach ($info['cols'] as $v) {
-					$sortable = " title='" . $info['filemtime'] . "'";
-					$output .= "<td" . $sortable . ">" . $v . "</td>";
+		<td title='" . $info['filesize'] . "'>" . $info['filesize_human'] . "</td>";
+
+				if (isset($dir_info['extra_info']) && is_array($dir_info['extra_info'])) {
+					foreach ($dir_info['extra_info'] as $ext_key => $ext_value) {
+						if (isset($info['extra_info']) && isset($info['extra_info'][$ext_value])) {
+							$output .= "<td class='explorer-row scanner-item-errors'>" . $info['extra_info'][$ext_value] . "</td>";
+						}
+					}
 				}
+
+				foreach ($info['cols'] as $col_value) {
+					$sortable = " title='" . $info['filemtime'] . "'";
+					$output .= "<td" . $sortable . ">" . $col_value . "</td>";
+				}
+
 				$output .= "</tr>";
 			}
 
 			$output .= "</tbody><tfoot>";
 
 			$colspan = 1 + sizeof(self::get_cols_info());
+			$counterInfo = '';
+			if (isset($dir_info['counter']) && is_array($dir_info['counter'])) {
+				$counterInfoArr = array();
+				foreach ($dir_info['counter'] as $counter_key => $counter_value) {
+					array_push($counterInfoArr, $counter_value . ' ' . $counter_key);
+				}
+				$counterInfo = implode(', ', $counterInfoArr);
+			}
 			$output .= "<tr><td><div class='cBoxAll'></div></td><td>
 			<select id='massAction' class='colSpan'>
 			<option disabled selected>Action</option>
@@ -163,7 +190,7 @@ if (!class_exists('FileManagerClass')) {
 			<option disabled>------------</option>
 			</select>
 			</td><td colspan='" . $colspan . "'></td></tr>
-			<tr><td></td><td colspan='" . ++$colspan . "'>" . count($files) . " File(s)<span class='xplSelected'></span></td></tr>
+			<tr><td></td><td colspan='" . ++$colspan . "'>" . $counterInfo . "<span class='xplSelected'></span></td></tr>
 			";
 			$output .= "</tfoot></table>";
 			return $output;

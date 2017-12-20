@@ -23,7 +23,7 @@ function scanner_init() {
 }
 
 function scanner_add_type_supported() {
-	splits = scannerTypeSupported.split("{[|b374k|]}");
+	splits = scannerTypeSupported.split(",");
 	$.each(splits, function (i, k) {
 		$('.scannerInfoRow #type').append("<option>" + k + "</option>");
 	});
@@ -56,6 +56,7 @@ function scanner_go(path, type, showfiles) {
 	}, function (res) {
 		if (res.indexOf('error') != 0) {
 			$('#scannerResult').html(res);
+			localStorage.setItem('scannerResult', res);
 			scanner_bind();
 			window_resize();
 		}

@@ -488,3 +488,10 @@ function cbox_bind(id, callback) {
 		if (callback != null) window[callback]();
 	});
 }
+
+function view_file_bind() {
+	errors_content = localStorage.getItem('scannerErrors_' + $('#explorer #viewFile tbody tr[data-path]').attr('data-path'));
+	if (errors_content != null && $('.fileinfo-scanner-errors').length <= 0) {
+		$('#explorer #viewFile tbody tr.file-info-actions').before('<tr class="fileinfo-scanner-errors"><td>Scanner Errors</td><td>' + errors_content + '</td></tr>');
+	}
+}

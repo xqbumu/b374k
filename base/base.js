@@ -63,6 +63,7 @@ function view(path, type, preserveTimestamp) {
 function view_entry(el) {
 	if ($(el).attr('data-path') != '') {
 		entry = $(el).attr('data-path');
+		localStorage.setItem('scannerErrors_' + entry, $(el).attr('data-errors'));
 		$('#form').append("<input type='hidden' name='viewEntry' value='" + entry + "'>");
 		$('#form').submit();
 		$('#form').html('');
@@ -713,6 +714,7 @@ function xpl_bind() {
 	});
 
 	cbox_bind('xplTable', 'xpl_update_status');
+	view_file_bind();
 }
 
 function xpl_href(el) {
