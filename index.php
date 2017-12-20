@@ -23,14 +23,16 @@ require $GLOBALS['packer']['base_dir'].'jsPacker.php';
 $base_code = "";
 $base_code .= packer_read_file($GLOBALS['packer']['base_dir']."resources.php");
 $base_code .= packer_read_file($GLOBALS['packer']['base_dir']."main.php");
+$base_code .= packer_read_file($GLOBALS['packer']['base_dir']."filemanager.php");
 $module_code = packer_read_file($GLOBALS['packer']['base_dir']."base.php");
 /* PHP FILES END */
 
 /* JAVASCRIPT AND CSS FILES START */
 $zepto_code = packer_read_file($GLOBALS['packer']['base_dir']."zepto.js");
 $js_main_code = "\n\n".packer_read_file($GLOBALS['packer']['base_dir']."main.js");
+$js_filemanager_code = "\n\n".packer_read_file($GLOBALS['packer']['base_dir']."filemanager.js");
 
-$js_code = "\n\n".packer_read_file($GLOBALS['packer']['base_dir']."sortable.js").$js_main_code;
+$js_code = "\n\n".packer_read_file($GLOBALS['packer']['base_dir']."sortable.js").$js_main_code.$js_filemanager_code;
 $js_code .= "\n\n".packer_read_file($GLOBALS['packer']['base_dir']."base.js");
 
 

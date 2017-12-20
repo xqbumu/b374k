@@ -27,3 +27,12 @@ table.box-database td, table.box-database th{
 	display:none;
 	margin:4px 0;
 }
+
+/* .col-errors{
+	max-width: 200px;
+} */
+
+#scannerResult #xplTable tr>td.scanner-item-errors{
+	text-align:left;
+	max-width:600px;
+}

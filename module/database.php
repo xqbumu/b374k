@@ -702,10 +702,10 @@ $GLOBALS['module']['database']['content'] = "
 <tbody>
 	<tr class='dbHostInfoRow'>
 		<td><select id='dbType'></select></td>
-		<td class='dbHostRow'><input type='text' id='dbHost' value='localhost' onkeydown='trap_enter(event, 'db_connect');'></td>
-		<td class='dbUserRow'><input type='text' id='dbUser' value='root' onkeydown='trap_enter(event, 'db_connect');'></td>
-		<td class='dbPassRow'><input type='text' id='dbPass' value='123456' onkeydown='trap_enter(event, 'db_connect');'></td>
-		<td class='dbPortRow'><input type='text' id='dbPort' value='' onkeydown='trap_enter(event, 'db_connect');'></td>
+		<td class='dbHostRow'><input type='text' id='dbHost' value='localhost' onkeydown='trap_enter(event, \"db_connect\");'></td>
+		<td class='dbUserRow'><input type='text' id='dbUser' value='root' onkeydown='trap_enter(event, \"db_connect\");'></td>
+		<td class='dbPassRow'><input type='text' id='dbPass' value='123456' onkeydown='trap_enter(event, \"db_connect\");'></td>
+		<td class='dbPortRow'><input type='text' id='dbPort' value='' onkeydown='trap_enter(event, \"db_connect\");'></td>
 		<td style='width:100px;'><span class='button' onclick='db_connect();'>Connect</span></td>
 	</tr>
 	<tr class='dbConnectRow'>
@@ -817,7 +817,7 @@ if (isset($p['dbGetSupported'])) {
 			header("Cache-Control: no-cache");
 			header("Pragma: no-cache");
 			// header("Content-disposition: attachment; filename=\"".basename($file)."\";");
-			header("Content-disposition: attachment; filename=\"backup_".time().".sql\";");
+			header("Content-disposition: attachment; filename=\"backup_" . time() . ".sql\";");
 			// $handler = fopen($file,"rb");
 			// while(!feof($handler)){
 			// 	print(fread($handler, 1024*8));

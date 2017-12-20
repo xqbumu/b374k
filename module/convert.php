@@ -15,8 +15,8 @@ $GLOBALS['module']['convert']['content'] = "
 <tfoot id='decodeResult'><tr><td colspan='2'>You can also press ctrl+enter to submit</td></tr></tfoot>
 </table>";
 
-if(!function_exists('decode')){
-	function decode($str){
+if (!function_exists('decode')) {
+	function decode($str) {
 		$res = "";
 		$length = (int) strlen($str);
 
@@ -26,13 +26,12 @@ if(!function_exists('decode')){
 		$res .= decode_line("base64 encode", base64_encode($str), "textarea");
 		$res .= decode_line("base64 decode", base64_decode($str), "textarea");
 
-
-		$res .= decode_line("hex to string", @pack("H*" , $str), "textarea");
+		$res .= decode_line("hex to string", @pack("H*", $str), "textarea");
 		$res .= decode_line("string to hex", bin2hex($str), "textarea");
 
 		$ascii = "";
-		for($i=0; $i<$length; $i++){
-			$ascii .= ord(substr($str,$i,1))." ";
+		for ($i = 0; $i < $length; $i++) {
+			$ascii .= ord(substr($str, $i, 1)) . " ";
 		}
 		$res .= decode_line("ascii char", trim($ascii), "textarea");
 
@@ -47,10 +46,13 @@ if(!function_exists('decode')){
 
 		$res .= decode_line("htmlentities", html_safe($str), "textarea");
 
-		if(function_exists('hash_algos')){
+		if (function_exists('hash_algos')) {
 			$algos = hash_algos();
-			foreach($algos as $algo){
-				if(($algo=='md5')||($algo=='sha1')) continue;
+			foreach ($algos as $algo) {
+				if (($algo == 'md5') || ($algo == 'sha1')) {
+					continue;
+				}
+
 				$res .= decode_line($algo, hash($algo, $str), "input");
 			}
 		}
@@ -59,20 +61,19 @@ if(!function_exists('decode')){
 	}
 }
 
-if(!function_exists('decode_line')){
-	function decode_line($type, $result, $inputtype){
-		$res = "<tr><td class='colFit'>".$type."</td><td>";
-		if($inputtype=='input'){
-			$res .= "<input type='text' value='".html_safe($result)."' ondblclick='this.select();'>";
-		}
-		else{
-			$res .= "<textarea style='height:80px;min-height:80px;' ondblclick='this.select();'>".html_safe($result)."</textarea>";
+if (!function_exists('decode_line')) {
+	function decode_line($type, $result, $inputtype) {
+		$res = "<tr><td class='colFit'>" . $type . "</td><td>";
+		if ($inputtype == 'input') {
+			$res .= "<input type='text' value='" . html_safe($result) . "' ondblclick='this.select();'>";
+		} else {
+			$res .= "<textarea style='height:80px;min-height:80px;' ondblclick='this.select();'>" . html_safe($result) . "</textarea>";
 		}
 		return $res;
 	}
 }
 
-if(isset($p['decodeStr'])){
+if (isset($p['decodeStr'])) {
 	$decodeStr = $p['decodeStr'];
 	output(decode($decodeStr));
 }
