@@ -281,11 +281,19 @@ if (isset($p['cd'])) {
 		}
 	}
 
+	$fmc = new FileManagerClass();
+	$dir_info = array();
+	$dir_info['targetFiles'] = $candidate;
+	$dir_info['counter'] = array(
+		'Hit Files' => sizeof($dir_info['targetFiles']),
+	);
+
 	if (count($candidate) > 0) {
-		$res = "";
-		foreach ($candidate as $k) {
-			$res .= "<p><span class='strong'>&gt;</span>&nbsp;<a data-path='" . html_safe($k) . "' onclick='view_entry(this);'>" . html_safe($k) . "</a></p>";
-		}
+		$res = $fmc->explor_files($dir_info);
+		// $res = "";
+		// foreach ($candidate as $k) {
+		// 	$res .= "<p><span class='strong'>&gt;</span>&nbsp;<a data-path='" . html_safe($k) . "' onclick='view_entry(this);'>" . html_safe($k) . "</a></p>";
+		// }
 	} else {
 		$res = "";
 	}

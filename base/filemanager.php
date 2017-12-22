@@ -93,16 +93,22 @@ if (!class_exists('FileManagerClass')) {
 		}
 
 		function explor_files($dir_info) {
-			if (is_string($dir_info) && sizeof($dir_info) > 0) {
-				$dir_info = self::get_all_files($dir_info);
-			} else {
-				foreach ($dir_info['targetFiles'] as $tf_k => $tf_v) {
-					$dir_info['targetFiles'][$tf_k] = array_merge($dir_info['targetFiles'][$tf_k], self::get_file_info($tf_k));
+			if (!is_array($dir_info)) {
+				if (is_string($dir_info) && sizeof($dir_info) > 0) {
+					$dir_info = self::get_all_files($dir_info);
 				}
 			}
 
-			if (!isset($dir_info['targetFiles']) || !is_array($dir_info['targetFiles'])) {
-				return 'error in explor_files';
+			if (isset($dir_info['targetFiles']) && is_array($dir_info['targetFiles'])) {
+				foreach ($dir_info['targetFiles'] as $tf_k => $tf_v) {
+					if (is_numeric($tf_k)) {
+						$dir_info['targetFiles'][$tf_v]['name'] = $tf_v;
+						$dir_info['targetFiles'][$tf_v] = array_merge($dir_info['targetFiles'][$tf_v], self::get_file_info($tf_v));
+						unset($dir_info['targetFiles'][$tf_k]);
+					} else {
+						$dir_info['targetFiles'][$tf_k] = array_merge($dir_info['targetFiles'][$tf_k], self::get_file_info($tf_k));
+					}
+				}
 			}
 
 			$output = '';
@@ -225,8 +231,13 @@ if (!class_exists('FileManagerClass')) {
 		function get_file_info($file, $extra = false) {
 			$info = array();
 			$info['name'] = $file;
-			$info['filesize'] = filesize($file);
-			$info['filesize_human'] = self::get_filesize($file);
+			if (is_file($file)) {
+				$info['filesize'] = filesize($file);
+				$info['filesize_human'] = self::get_filesize($file);
+			} else {
+				$info['filesize'] = 'DIR';
+				$info['filesize_human'] = 'DIR';
+			}
 			$info['filemtime'] = filemtime($file);
 
 			$info['cols'] = array();
