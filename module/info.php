@@ -66,7 +66,7 @@ if (!function_exists('info_getinfo')) {
 
 		if (!is_win()) {
 			// cpu info
-			if ($i_buff = trim(read_file("/proc/cpuinfo"))) {
+			if ($i_buff = trim($fmc->get("/proc/cpuinfo"))) {
 				$res .= "<p class='boxtitle' onclick=\"info_toggle('info_cpu');\" style='margin-bottom:8px;'>CPU Info</p>";
 				$res .= "<div class='info' id='info_cpu' style='margin-bottom:8px;display:none;'>";
 				$i_buffs = explode("\n\n", $i_buff);
@@ -92,7 +92,7 @@ if (!function_exists('info_getinfo')) {
 			}
 
 			// mem info
-			if ($i_buff = trim(read_file("/proc/meminfo"))) {
+			if ($i_buff = trim($fmc->get("/proc/meminfo"))) {
 				$res .= "<p class='boxtitle' onclick=\"info_toggle('info_mem');\" style='margin-bottom:8px;'>Memory Info</p>";
 				$i_buffs = explode("\n", $i_buff);
 				$res .= "<div class='info' id='info_mem' style='margin-bottom:8px;display:none;'><table class='dataView'>";
@@ -113,7 +113,7 @@ if (!function_exists('info_getinfo')) {
 			}
 
 			// partition
-			if ($i_buff = trim(read_file("/proc/partitions"))) {
+			if ($i_buff = trim($fmc->get("/proc/partitions"))) {
 				$i_buff = preg_replace("/\ +/", " ", $i_buff);
 				$res .= "<p class='boxtitle' onclick=\"info_toggle('info_part');\" style='margin-bottom:8px;'>Partitions Info</p>";
 				$res .= "<div class='info' id='info_part' style='margin-bottom:8px;display:none;'>";

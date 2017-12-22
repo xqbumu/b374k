@@ -23,6 +23,7 @@ error_reporting(0);
 #tobottom{-webkit-transform:scaleY(-1);-moz-transform:scaleY(-1);-o-transform:scaleY(-1);transform:scaleY(-1);filter:FlipV;-ms-filter:"FlipV";}
 #showinfo{float:right;display:none;}
 #logout{float:right;}
+#logout-destory{float:right;}
 </style>
 </head>
 <body>
@@ -38,6 +39,7 @@ error_reporting(0);
 			<font color="#FFFFFF"><a class="navbar" data-path="<?php echo isset($GLOBALS['home_cwd'])?$GLOBALS['home_cwd']:''; ?>">[Home]</a></font>
 
 			<a class='boxclose' id='logout' title='log out'>x</a>
+			<a class='boxclose' id='logout-destory' title='log out with destory'>d</a>
 			<a class='boxclose' id='showinfo' title='show info'>v</a>
 		</div>
 		<!--header info end-->

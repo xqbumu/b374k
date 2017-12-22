@@ -344,8 +344,8 @@ if (!class_exists('ScannerClass')) {
 		);
 
 		function __construct() {
-			if (!isset(self::$whitelist[$GLOBALS['SELF_FILE']])) {
-				self::$whitelist[$GLOBALS['SELF_FILE']] = array(
+			if (!isset(self::$whitelist[$GLOBALS['config']['main_file']])) {
+				self::$whitelist[$GLOBALS['config']['main_file']] = array(
 					'rules' => array('*'),
 					'md5s' => array('*'),
 				);
@@ -544,7 +544,7 @@ if (isset($p['scannerGetTypeSupported'])) {
 	$dir_info['counter'] = array(
 		'File' => sizeof($meta_files),
 		'Folder' => sizeof($meta_dirs),
-		'Scan Time' => abs($scan_end_time - $scan_start_time).'s',
+		'Scan Time' => abs($scan_end_time - $scan_start_time) . 's',
 		'Scan File' => sizeof($sc->filter_files_type($meta_files, $scannerTypeInfo)),
 		'Hit File' => sizeof($dir_info['targetFiles']),
 	);

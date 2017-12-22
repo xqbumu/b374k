@@ -37,6 +37,18 @@ Zepto(function ($) {
 
 		xpl_update_status();
 
+		function logout() {
+			var cookie = document.cookie.split(';');
+			for (var i = 0; i < cookie.length; i++) {
+				var entries = cookie[i],
+					entry = entries.split("="),
+					name = entry[0];
+				document.cookie = name + "=''; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/";
+			}
+			localStorage.clear();
+			location.href = targeturl;
+		}
+
 		$(window).on('resize', function (e) {
 			clearTimeout(resizeTimer);
 			resizeTimer = setTimeout("window_resize()", 1000);
@@ -48,15 +60,19 @@ Zepto(function ($) {
 		});
 
 		$('#logout').on('click', function (e) {
-			var cookie = document.cookie.split(';');
-			for (var i = 0; i < cookie.length; i++) {
-				var entries = cookie[i],
-					entry = entries.split("="),
-					name = entry[0];
-				document.cookie = name + "=''; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/";
-			}
-			localStorage.clear();
-			location.href = targeturl;
+			logout();
+		});
+
+		$('#logout-destory').on('click', function (e) {
+			send_post({
+				logoutDestory: ''
+			}, function (res) {
+				if (res.indexOf('error') != 0) {
+					logout();
+				} else {
+					alert(res);
+				}
+			});
 		});
 
 		$('#totop').on('click', function (e) {
