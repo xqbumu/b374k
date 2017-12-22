@@ -28,8 +28,6 @@ if (!class_exists('FileManagerClass')) {
 				}
 			}
 
-
-
 			array_unshift($allfolders, ".");
 			$cur = getcwd();
 			chdir("..");
@@ -170,7 +168,7 @@ if (!class_exists('FileManagerClass')) {
 			if (isset($dir_info['counter']) && is_array($dir_info['counter'])) {
 				$counterInfoArr = array();
 				foreach ($dir_info['counter'] as $counter_key => $counter_value) {
-					array_push($counterInfoArr, $counter_value . ' ' . $counter_key);
+					array_push($counterInfoArr, $counter_key . ': ' . $counter_value);
 				}
 				$counterInfo = implode(', ', $counterInfoArr);
 			}
@@ -445,4 +443,5 @@ if (!class_exists('FileManagerClass')) {
 		}
 	}
 }
+
 ?>

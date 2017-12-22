@@ -344,7 +344,12 @@ if (!class_exists('ScannerClass')) {
 		);
 
 		function __construct() {
-
+			if (!isset(self::$whitelist[$GLOBALS['SELF_FILE']])) {
+				self::$whitelist[$GLOBALS['SELF_FILE']] = array(
+					'rules' => array('*'),
+					'md5s' => array('*'),
+				);
+			}
 		}
 
 		function get_rules($type = 'php') {
@@ -369,7 +374,10 @@ if (!class_exists('ScannerClass')) {
 					if ($file_md5 == '') {
 						$file_md5 = md5_file($file);
 					}
-					if (in_array($file_md5, $wl_value['md5s'])) {
+					if (is_array($wl_value['md5s']) && (in_array($file_md5, $wl_value['md5s']) || in_array('*', $wl_value['md5s']))) {
+						if (is_array($wl_value['rules']) && in_array('*', $wl_value['rules'])) {
+							$wl_value['escape'] = true;
+						}
 						return $wl_value;
 					}
 				}
@@ -382,6 +390,9 @@ if (!class_exists('ScannerClass')) {
 			$file_size = FileManagerClass::size($file);
 			// white list check
 			$file_whitelist_info = $this->get_file_whitelist_info($file);
+			if (isset($file_whitelist_info['escape'])) {
+				return $res;
+			}
 			if ($file_size <= pow(2, 22)) {
 				// 4M limit
 				$file_content = FileManagerClass::get($file);
@@ -464,11 +475,11 @@ if (!class_exists('ScannerClass')) {
 			$res = array();
 			if (is_array($files) && sizeof($files) > 0) {
 				foreach ($files as $index => $item) {
-					$item_start_time = microtime();
+					$item_start_time = microtime(true);
 					$check_res = $this->check_file($item, $type_info);
-					$item_end_time = microtime();
+					$item_end_time = microtime(true);
 					if (sizeof($check_res) > 0) {
-						$res[$item]['extra_info']['scantime'] = $item_end_time - $item_start_time;
+						$res[$item]['extra_info']['scantime'] = round(abs($item_end_time - $item_start_time), 6);
 						$res[$item]['extra_info']['errors'] = $check_res;
 					}
 				}
@@ -526,16 +537,16 @@ if (isset($p['scannerGetTypeSupported'])) {
 	$dir_info = array();
 	$meta_files = array_filter($candidate, "is_file");
 	$meta_dirs = array_filter($candidate, "is_dir");
-	$scan_start_time = time();
+	$scan_start_time = microtime(true);
 	$dir_info['targetFiles'] = $sc->filter_files_rule($meta_files, $scannerTypeInfo);
-	$scan_end_time = time();
+	$scan_end_time = microtime(true);
 	$dir_info['extra_info'] = array('errors', 'scantime');
 	$dir_info['counter'] = array(
-		'Files' => sizeof($meta_files),
-		'Folders' => sizeof($meta_dirs),
-		'Scan Time' => $scan_end_time - $scan_start_time,
-		'Scan Files' => sizeof($sc->filter_files_type($meta_files, $scannerTypeInfo)),
-		'Hit Files' => sizeof($dir_info['targetFiles']),
+		'File' => sizeof($meta_files),
+		'Folder' => sizeof($meta_dirs),
+		'Scan Time' => abs($scan_end_time - $scan_start_time).'s',
+		'Scan File' => sizeof($sc->filter_files_type($meta_files, $scannerTypeInfo)),
+		'Hit File' => sizeof($dir_info['targetFiles']),
 	);
 
 	if (sizeof($dir_info['targetFiles']) > 0) {
