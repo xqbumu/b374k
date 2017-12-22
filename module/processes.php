@@ -41,7 +41,10 @@ if(!function_exists('show_processes')){
 					}
 					else{
 						$psln = explode($wexplode, $psa, $wcount);
-						$pid = trim(trim($psln[1]),"\"");
+						$pid = '0';
+						if (sizeof($psln) > 1) {
+							$pid = trim(trim($psln[1]),"\"");
+						}
 						$tblcount = 0;
 						$output .= "<tr data-pid='".$pid."'>";
 

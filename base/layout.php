@@ -35,7 +35,7 @@ error_reporting(0);
 			<span><a onclick="set_cookie('cwd', '');" href='<?php echo get_self(); ?>'><?php echo $GLOBALS['title'] . " " . $GLOBALS['ver'] ?></a></span>
 			<img onclick='viewfileorfolder();' id='b374k' src='<?php echo get_resource('b374k'); ?>' />&nbsp;
 			<span id='nav'><?php echo $nav; ?></span>
-			<font color="#FFFFFF"><a class="navbar" data-path="<?php echo $GLOBALS['home_cwd']; ?>">[Home]</a></font>
+			<font color="#FFFFFF"><a class="navbar" data-path="<?php echo isset($GLOBALS['home_cwd'])?$GLOBALS['home_cwd']:''; ?>">[Home]</a></font>
 
 			<a class='boxclose' id='logout' title='log out'>x</a>
 			<a class='boxclose' id='showinfo' title='show info'>v</a>

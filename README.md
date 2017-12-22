@@ -45,12 +45,13 @@ options :
         -b                                      encode with base64
         -z [no|gzdeflate|gzencode|gzcompress]   compression (use only with -b)
         -c [0-9]                                level of compression
+        -u                                      obscure code
         -l                                      list available modules
         -k                                      list available themes
 ```
 example :
 ```
-$ php -f index.php -- -o myShell.php -p myPassword -s -b -z gzcompress -c 9
+$ php -f index.php -- -o myShell.php -p myPassword -s -b -z gzcompress -c 9 -u
 ```
 Don't forget to delete index.php, base, module, theme and all files inside it after you finished. Because it is not protected with password so it can be a security threat to your server
 

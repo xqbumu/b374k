@@ -8,6 +8,8 @@ if (!defined('DETECT_SYS_CHARSET')) {
 
 @ob_start();
 error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
+// register_shutdown_function(function(){ var_dump(error_get_last()); });
+
 @ini_set('html_errors', '0');
 @ini_set('display_errors', '1');
 @ini_set('display_startup_errors', '1');
@@ -87,8 +89,8 @@ if (!function_exists('convert_string_to_sys')) {
 
 if (!function_exists('get_server_info')) {
 	function get_server_info() {
-		$freeSpace = @diskfreespace($GLOBALS['cwd']);
-		$totalSpace = @disk_total_space($GLOBALS['cwd']);
+		$freeSpace = @diskfreespace(get_cwd());
+		$totalSpace = @disk_total_space(get_cwd());
 		$totalSpace = $totalSpace ? $totalSpace : 1;
 		// added by xqbumu
 		if (!function_exists('posix_getegid')) {
@@ -129,7 +131,7 @@ if (!function_exists('get_server_info_html')) {
 if (!function_exists('get_self')) {
 	function get_self() {
 		$query = (isset($_SERVER["QUERY_STRING"]) && (!empty($_SERVER["QUERY_STRING"]))) ? "?" . $_SERVER["QUERY_STRING"] : "";
-		if (strpos($_SERVER["REQUEST_URI"], $query)) {
+		if ($query && strpos($_SERVER["REQUEST_URI"], $query)) {
 			return html_safe($_SERVER["REQUEST_URI"]);
 		} else {
 			return html_safe($_SERVER["REQUEST_URI"] . $query);
