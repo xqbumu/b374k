@@ -10,6 +10,7 @@ error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
 @ini_set('display_errors', '1');
 @ini_set('display_startup_errors', '1');
 @ini_set('log_errors', '0');
+@ini_set('max_execution_time', '0');
 @set_time_limit(0);
 @clearstatcache();
 

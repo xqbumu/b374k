@@ -29,33 +29,46 @@ if (!class_exists('ScannerClass')) {
 		);
 
 		public static $whitelist = array(
-			'libs\ci\database\drivers\sqlite\sqlite_driver.php' => array(
+			'libs/ci/database/drivers/sqlite/sqlite_driver.php' => array(
+				'match' => 'string',
 				'rules' => array('popen\(.+\)'),
-				'md5s' => array('b8485839a116df67cf8a51b9d7dd4212'),
+				'md5s' => array('b8485839a116df67cf8a51b9d7dd4212', '0dc2e13f95159ae952bca2cd3f99bfef'),
 			),
-			'libs\libraries\Sms.php' => array(
+			'libs/libraries/Sms.php' => array(
+				'match' => 'string',
 				'rules' => array('t.cn', '0155'),
 				'md5s' => array('6139119cc461e66815f29d85d0f3671b', 'd82bb89e3beb33e008ee0a3721d94ccb'),
 			),
-			'libs\ci\libraries\Email.php' => array(
+			'libs/ci/libraries/Email.php' => array(
+				'match' => 'string',
 				'rules' => array('popen\(.+\)'),
-				'md5s' => array('3148a9cdcdd674e0e46d22941ffeb11f'),
+				'md5s' => array('3148a9cdcdd674e0e46d22941ffeb11f', '089818be411613fe4f7af07b30352a2d'),
 			),
-			'libs\ci\libraries\Image_lib.php' => array(
+			'libs/ci/libraries/Image_lib.php' => array(
+				'match' => 'string',
 				'rules' => array('escapeshellarg'),
 				'md5s' => array('9ce24c091cad13a9df60e3c85e828bf8'),
 			),
-			'libs\ci\libraries\Upload.php' => array(
+			'libs/ci/libraries/Upload.php' => array(
+				'match' => 'string',
 				'rules' => array('function\_exists\s*\(\s*[\'|\"](popen|exec|proc\_open|system|passthru)+[\'|\"]\s*\)', 'popen\(.+\)', 'shell_exec(', 'escapeshellarg'),
 				'md5s' => array('75b02a834a4cc6b14d252e7442ad3a0e', '9d06f2fb016ef94357b7b1f37fb5f1f2'),
 			),
-			'libs\ci\libraries\Xmlrpc.php' => array(
+			'libs/ci/libraries/Xmlrpc.php' => array(
+				'match' => 'string',
 				'rules' => array('eval\((\'|"|\s*)\\$'),
-				'md5s' => array('8b308c187c3d579a90874b1d6a15dd5c', '767c271eafcddcea393f081a08a0d115'),
+				'md5s' => array('8b308c187c3d579a90874b1d6a15dd5c', '767c271eafcddcea393f081a08a0d115', 'f08a1d1ababc3a85c090d0479ff63a50'),
 			),
-			'config\user_agents.php' => array(
+			'config/user_agents.php' => array(
+				'match' => 'string',
 				'rules' => array('alexa'),
 				'md5s' => array('35c19f0eb9f22b91acaef8e5cc9b8ee1'),
+			),
+			'logs.log-[0-9]{4}-[0-9]{2}-[0-9]{2}' => array( // 排除日志
+				'match' => 'regexp',
+				'skip' => true,
+				'rule' => '*',
+				'md5s' => array('*')
 			),
 		);
 
@@ -350,6 +363,16 @@ if (!class_exists('ScannerClass')) {
 					'md5s' => array('*'),
 				);
 			}
+
+			$whitelist = array();
+			foreach (self::$whitelist as $k => $v) {
+				if ((isset($v['match']) && $v['match'] == 'string') || !isset($v['match'])) {
+					$whitelist[str_replace('/', DIRECTORY_SEPARATOR, $k)] = $v;
+				} else {
+					$whitelist[$k] = $v;
+				}
+			}
+			self::$whitelist = $whitelist;
 		}
 
 		function get_rules($type = 'php') {
@@ -370,16 +393,31 @@ if (!class_exists('ScannerClass')) {
 		function get_file_whitelist_info($file) {
 			$file_md5 = '';
 			foreach (self::$whitelist as $wl_key => $wl_value) {
-				if (strpos($file, $wl_key) !== false) {
-					if ($file_md5 == '') {
-						$file_md5 = md5_file($file);
-					}
-					if (is_array($wl_value['md5s']) && (in_array($file_md5, $wl_value['md5s']) || in_array('*', $wl_value['md5s']))) {
-						if (is_array($wl_value['rules']) && in_array('*', $wl_value['rules'])) {
-							$wl_value['escape'] = true;
-						}
+				if (!isset($wl_value['match'])) {
+					$wl_value['match'] = 'string';
+				}
+				switch ($wl_value['match']) {
+				case 'regexp':
+					$pos = preg_match("/$wl_key/i", $file);
+					if ($pos) {
+						$wl_value['escape'] = true;
 						return $wl_value;
 					}
+					break;
+				case 'string':
+				default:
+					if (strpos($file, $wl_key) !== false) {
+						if ($file_md5 == '') {
+							$file_md5 = md5_file($file);
+						}
+						if (is_array($wl_value['md5s']) && (in_array($file_md5, $wl_value['md5s']) || in_array('*', $wl_value['md5s']))) {
+							if (is_array($wl_value['rules']) && in_array('*', $wl_value['rules'])) {
+								$wl_value['escape'] = true;
+							}
+							return $wl_value;
+						}
+					}
+					break;
 				}
 			}
 			return false;
@@ -544,7 +582,7 @@ if (isset($p['scannerGetTypeSupported'])) {
 	$dir_info['counter'] = array(
 		'File' => sizeof($meta_files),
 		'Folder' => sizeof($meta_dirs),
-		'Scan Time' => abs($scan_end_time - $scan_start_time) . 's',
+		'Scan Time' => round(abs($scan_end_time - $scan_start_time), 4) . 's',
 		'Scan File' => sizeof($sc->filter_files_type($meta_files, $scannerTypeInfo)),
 		'Hit File' => sizeof($dir_info['targetFiles']),
 	);

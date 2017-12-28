@@ -10,8 +10,15 @@ if (!defined('USER_IS_WIN')) {
 	define('USER_IS_WIN', DIRECTORY_SEPARATOR == '\\');
 }
 
-if (!defined('DETECT_SYS_CHARSET')) {
+if (!defined('DETECT_SYS_CHARSET')){
 	define('DETECT_SYS_CHARSET', DIRECTORY_SEPARATOR == '\\' ? 'gb2312' : 'utf-8');
+}
+
+if (!defined('BASE_COMMON_MAIN_FILELOADED')) {
+	define('BASE_COMMON_MAIN_FILELOADED', true);
+
+	// 预定义值，停止eval过程中无法正确返回系统常量
+	$GLOBALS['config']['main_file'] = __FILE__;
 }
 
 $GLOBALS['packer']['title'] = "b374k shell packer";
