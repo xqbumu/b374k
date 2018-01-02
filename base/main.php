@@ -70,7 +70,11 @@ if (!function_exists('get_cookie')) {
 
 if (!function_exists('convert_string_to_utf8')) {
 	function convert_string_to_utf8($str = '') {
-		return @mb_convert_encoding($str, 'UTF-8', mb_detect_encoding($str, "UTF-8, GB2312", true));
+		if (function_exists('mb_detect_encoding')) {
+			return @mb_convert_encoding($str, 'UTF-8', mb_detect_encoding($str, "UTF-8, GB2312", true));
+		} else {
+			return $str;
+		}
 	}
 }
 
@@ -1095,12 +1099,14 @@ if (!function_exists('output')) {
 	function output($str, $charset = DETECT_SYS_CHARSET) {
 		$error = @ob_get_contents();
 
-		switch (mb_detect_encoding($str, "UTF-8, GB2312, ISO-8859-1, ISO-8859-15", true)) {
-		case 'UTF-8':
-			$charset = 'utf-8';
-			break;
-		default:
-			break;
+		if (function_exists('mb_detect_encoding')) {
+			switch (mb_detect_encoding($str, "UTF-8, GB2312, ISO-8859-1, ISO-8859-15", true)) {
+			case 'UTF-8':
+				$charset = 'utf-8';
+				break;
+			default:
+				break;
+			}
 		}
 
 		@ob_end_clean();
