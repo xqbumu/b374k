@@ -57,7 +57,7 @@ if (!class_exists('ScannerClass')) {
 			'libraries/Upload.php' => array(
 				'match' => 'string',
 				'rules' => array('function\_exists\s*\(\s*[\'|\"](popen|exec|proc\_open|system|passthru)+[\'|\"]\s*\)', 'popen\(.+\)', 'shell_exec(', 'escapeshellarg'),
-				'md5s' => array('75b02a834a4cc6b14d252e7442ad3a0e', '9d06f2fb016ef94357b7b1f37fb5f1f2'),
+				'md5s' => array('75b02a834a4cc6b14d252e7442ad3a0e', '9d06f2fb016ef94357b7b1f37fb5f1f2', '353152cbb1c9de33b324ad3c047aca48'),
 			),
 			'libraries/Xmlrpc.php' => array(
 				'match' => 'string',
@@ -78,6 +78,26 @@ if (!class_exists('ScannerClass')) {
 				'match' => 'string',
 				'rules' => array('alexa'),
 				'md5s' => array('ad688d542522e5d3d1d89ca7aaa7fd5e'),
+			),
+			'PHPExcel/Calculation/Statistical.php' => array(
+				'match' => 'string',
+				'rules' => array('0155'),
+				'md5s' => array('200647a809afc11198fcb52d47718061'),
+			),
+			'PHPExcel/Reader/Gnumeric.php' => array(
+				'match' => 'string',
+				'rules' => array('gzread'),
+				'md5s' => array('14eb4e868c3c117ca78b2ee1a8fbd5e7'),
+			),
+			'PHPExcel/Shared/Drawing.php' => array(
+				'match' => 'string',
+				'rules' => array('alexa'),
+				'md5s' => array('af1da980682f5c1f2731f94133b81567'),
+			),
+			'PHPExcel/Shared/PCLZip/pclzip.lib.php' => array(
+				'match' => 'string',
+				'rules' => array('eval\((\'|"|\s*)\\$'),
+				'md5s' => array('3ee0a4d8a06cedc0a56f29e8f351ef72'),
 			),
 			'logs.log-[0-9]{4}-[0-9]{2}-[0-9]{2}' => array( // 排除日志
 				'match' => 'regexp',
@@ -251,7 +271,6 @@ if (!class_exists('ScannerClass')) {
 				'后门特征' => array(
 					array('string', 'gutou'),
 					array('string', 'gzread'),
-					array('string', 'alexa'),
 					array('string', 'ckfd'),
 					array('string', '186056'),
 					array('string', '映阳网络'),
@@ -430,8 +449,8 @@ if (!class_exists('ScannerClass')) {
 							if (is_array($wl_value['rules']) && in_array('*', $wl_value['rules'])) {
 								$wl_value['escape'] = true;
 							}
-							return $wl_value;
 						}
+						return $wl_value;
 					}
 					break;
 				}
