@@ -393,6 +393,7 @@ if (!class_exists('ScannerClass')) {
 		function __construct() {
 			if (!isset(self::$whitelist[$GLOBALS['config']['main_file']])) {
 				self::$whitelist[$GLOBALS['config']['main_file']] = array(
+					'match' => 'string',
 					'rules' => array('*'),
 					'md5s' => array('*'),
 				);

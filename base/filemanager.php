@@ -23,14 +23,13 @@ if (!class_exists('FileManagerClass')) {
 						} elseif (is_file($file)) {
 							$allfiles[] = $file;
 						}
-
 					}
 				}
 			}
 
 			array_unshift($allfolders, ".");
 			$cur = getcwd();
-			chdir("..");
+			@chdir("..");
 			if (getcwd() != $cur) {
 				array_unshift($allfolders, "..");
 			}
