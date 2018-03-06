@@ -36,7 +36,7 @@ if(!function_exists('show_processes')){
 						$fi = false;
 						$psln = explode($wexplode, $psa, $wcount);
 						$output .= "<tr><th class='col-cbox sorttable_nosort'><div class='cBoxAll'></div></th><th class='sorttable_nosort'>action</th>";
-						foreach($psln as $p) $output .= "<th>".trim(trim(strtolower($p)) ,"\"")."</th>";
+						foreach($psln as $p) $output .= "<th>".trim(trim(strtolower(html_safe($p))) ,"\"")."</th>";
 						$output .= "</tr>";
 					}
 					else{
