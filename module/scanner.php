@@ -4,28 +4,46 @@ if (!class_exists('ScannerClass')) {
     {
         public static $types = array(
             'php' => array(
+                'action' => 'scan_content',
                 'exts' => array('php', 'inc', 'txt', 'html'),
                 'rule' => array('php'),
             ),
             'js' => array(
+                'action' => 'scan_content',
                 'exts' => array('js'),
                 'rule' => array('php'),
             ),
             'asx' => array(
+                'action' => 'scan_content',
                 'exts' => array('asp', 'asa', 'cer', 'aspx', 'ascx'),
                 'rule' => array('asx'),
             ),
             'jpg' => array(
+                'action' => 'scan_content',
                 'exts' => array('jpg', 'jpeg'),
                 'rule' => array('php'),
             ),
-            'gif_bmp' => array(
+            'gif|bmp' => array(
+                'action' => 'scan_content',
                 'exts' => array('bmp', 'gif', 'png'),
                 'rule' => array('php'),
             ),
             'txt' => array(
+                'action' => 'scan_content',
                 'exts' => array('txt'),
                 'rule' => array('php'),
+            ),
+            'FileExt_all_invert' => array(
+                'action' => 'scan_file_ext',
+                'params' => array('invert' => true),
+                'exts' => array('php'),
+                'rule' => array('ext_media', 'ext_doc', 'ext_font', 'ext_web', 'ext_others'),
+            ),
+            'FileExt_upload_invert' => array(
+                'action' => 'scan_file_ext',
+                'params' => array('invert' => true),
+                'exts' => array(),
+                'rule' => array('ext_media', 'ext_doc'),
             ),
         );
 
@@ -396,6 +414,53 @@ if (!class_exists('ScannerClass')) {
                     array('string', 'lake2', '12'),
                 ),
             ),
+            'ext_bin' => array(
+                array('string', 'exe'),
+            ),
+            'ext_media' => array(
+                array('string', 'jpg'),
+                array('string', 'jpeg'),
+                array('string', 'png'),
+                array('string', 'bmp'),
+                array('string', 'mp4'),
+                array('string', 'flv'),
+                array('string', 'fla'),
+                array('string', 'gif'),
+                array('string', 'swf'),
+                array('string', 'mp3'),
+                array('string', 'ico'),
+            ),
+            'ext_doc' => array(
+                array('string', 'pdf'),
+                array('string', 'zip'),
+                array('string', 'docx'),
+                array('string', 'bmp'),
+                array('string', 'md'),
+            ),
+            'ext_font' => array(
+                array('string', 'ttf'),
+                array('string', 'eot'),
+                array('string', 'woff'),
+                array('string', 'woff2'),
+                array('string', 'otf'),
+                array('string', 'svg'),
+            ),
+            'ext_web' => array(
+                array('string', 'js'),
+                array('string', 'css'),
+                array('string', 'map'),
+                array('string', 'html'),
+                array('string', 'htaccess'),
+            ),
+            'ext_others' => array(
+                array('string', 'cfg'),
+                array('string', 'sql'),
+                array('string', 'json'),
+                array('string', 'gz'),
+                array('string', 'conf'),
+                array('string', 'DS_Store'),
+                array('string', 'sh'),
+            ),
         );
 
         public function __construct()
@@ -425,8 +490,14 @@ if (!class_exists('ScannerClass')) {
             if ($type_info != null) {
                 $type_info['rules'] = array();
                 foreach (self::$rules as $key => $value) {
-                    if (in_array($key, $type_info['exts'])) {
-                        $type_info['rules'][$key] = $value;
+                    if (in_array($key, $type_info['rule'])) {
+                        if (strpos($key, 'ext_') === 0) {
+                            foreach ($value as $k => $v) {
+                                array_push($type_info['exts'], $v[1]);
+                            }
+                        } else {
+                            $type_info['rules'][$key] = $value;
+                        }
                     }
                 }
             } else {
@@ -544,12 +615,16 @@ if (!class_exists('ScannerClass')) {
             return $res;
         }
 
-        public function filter_files_type($files = array(), $type_info)
+        public function filter_files_ext($files = array(), $type_info)
         {
             $res = array();
+            $is_invert = false;
+            if (isset($type_info['params']) && isset($type_info['params']['invert'])) {
+                $is_invert = $type_info['params']['invert'];
+            }
             if (is_array($files) && sizeof($files) > 0) {
                 foreach ($files as $key => $value) {
-                    if (in_array(FileManagerClass::extension($value), $type_info['exts'])) {
+                    if (in_array(strtolower(FileManagerClass::extension($value)), $type_info['exts']) === !$is_invert) {
                         array_push($res, $value);
                     }
                 }
@@ -559,7 +634,7 @@ if (!class_exists('ScannerClass')) {
 
         public function filter_files_rule($files = array(), $type_info)
         {
-            $files = $this->filter_files_type($files, $type_info);
+            $files = $this->filter_files_ext($files, $type_info);
             $res = array();
             if (is_array($files) && sizeof($files) > 0) {
                 foreach ($files as $index => $item) {
@@ -573,6 +648,10 @@ if (!class_exists('ScannerClass')) {
                 }
             }
             return $res;
+        }
+
+        public function scan_content()
+        {
         }
     }
 }
@@ -611,35 +690,44 @@ if (isset($p['scannerGetTypeSupported'])) {
 } elseif (isset($p['scannerPath'])) {
     $sc = new ScannerClass();
     $fmc = new FileManagerClass();
-    $scannerPath = trim($p['scannerPath']);
-    $scannerType = trim($p['scannerType']);
-    $scannerTypeInfo = $sc->get_rules($scannerType);
+    $scanPath = trim($p['scannerPath']);
+    $scanType = trim($p['scannerType']);
+    $scanRule = $sc->get_rules($scanType);
 
-    if (isset($scannerTypeInfo['error'])) {
-        output($scannerTypeInfo['error']);
+    if (isset($scanRule['error'])) {
+        output($scanRule['error']);
         die();
     }
 
-    $candidate = $fmc->get_all_files($scannerPath);
+    $candidate = $fmc->get_all_files($scanPath);
     $dir_info = array();
     $meta_files = array_filter($candidate, "is_file");
     $meta_dirs = array_filter($candidate, "is_dir");
     $scan_start_time = microtime(true);
-    $dir_info['targetFiles'] = $sc->filter_files_rule($meta_files, $scannerTypeInfo);
+
+    $res = "";
+    switch ($scanRule['action']) {
+        case 'scan_file_ext':
+            $dir_info['targetFiles'] = $sc->filter_files_ext($meta_files, $scanRule);
+            break;
+        
+        default:
+            $dir_info['targetFiles'] = $sc->filter_files_rule($meta_files, $scanRule);
+            break;
+    }
+
     $scan_end_time = microtime(true);
     $dir_info['extra_info'] = array('errors', 'scantime');
     $dir_info['counter'] = array(
         'File' => sizeof($meta_files),
         'Folder' => sizeof($meta_dirs),
         'Scan Time' => round(abs($scan_end_time - $scan_start_time), 4) . 's',
-        'Scan File' => sizeof($sc->filter_files_type($meta_files, $scannerTypeInfo)),
+        'Scan File' => sizeof($sc->filter_files_ext($meta_files, $scanRule)),
         'Hit File' => sizeof($dir_info['targetFiles']),
     );
 
     if (sizeof($dir_info['targetFiles']) > 0) {
         $res = $fmc->explor_files($dir_info);
-    } else {
-        $res = "";
     }
 
     output($res);

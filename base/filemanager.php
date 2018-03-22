@@ -366,7 +366,7 @@ if (!class_exists('FileManagerClass')) {
         {
             $base = log($size) / log(1024);
             $subfix = ' unknow';
-            if(isset(self::$sizeSuffixes[floor($base)])) {
+            if (isset(self::$sizeSuffixes[floor($base)])) {
                 $subfix = ' '.self::$sizeSuffixes[floor($base)];
             }
             return round(pow(1024, $base - floor($base)), 2) . $subfix;
